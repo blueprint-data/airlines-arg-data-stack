@@ -1,0 +1,29 @@
+default_environment: dev
+
+project_id: airlines-arg-data-stack
+
+plugins:
+  extractors:
+  - name: tap-airlines-arg
+    namespace: tap_airlines_arg
+    pip_url: git+https://github.com/blueprint-data/tap-airlines-arg.git
+    executable: tap-airlines-arg
+  loaders:
+  - name: target-jsonl
+    variant: andyh1203
+    pip_url: target-jsonl
+  - name: target-bigquery
+    variant: z3z1ma
+    pip_url: git+https://github.com/z3z1ma/target-bigquery.git
+    config:
+      project: ${TARGET_BIGQUERY_PROJECT}
+      dataset: ${MELTANO_ENVIRONMENT}_${MELTANO_EXTRACTOR_NAMESPACE}
+      location: ${TARGET_BIGQUERY_LOCATION}
+      credentials_path: ${TARGET_BIGQUERY_CREDENTIALS_PATH}
+      denormalized: false
+      generate_view: true
+
+environments:
+- name: dev
+- name: ci
+- name: prod

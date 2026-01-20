@@ -1,0 +1,30 @@
+[project]
+name = "airlines-arg-data-stack-data-stack"
+version = "1.0.0"
+description = "Data extraction and transformation pipeline for airlines-arg-data-stack"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+extraction = [
+  "meltano[gcs]>=4.0.0",
+]
+transform = [
+    "dbt-core>=1.9.0",
+    "dbt-bigquery>=1.9.0",
+    "sqlfluff>=3.0.0",
+    "sqlfluff-templater-dbt>=3.0.0",
+]
+all = [
+    "airlines-arg-data-stack-data-stack[extraction,transform]",
+]
+dev = [
+    "airlines-arg-data-stack-data-stack[all]",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []
