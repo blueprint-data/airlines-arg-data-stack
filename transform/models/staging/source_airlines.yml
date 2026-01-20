@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: tap_airlines
+    database: "{{ target.database }}"
+    schema: "{{ target.name }}_tap_airlines_arg"
+    tables:
+      - name: aerolineas_all_flights
+        description: |
+          Raw flight data from Aeropuertos Argentina API stored as JSON.
+          The 'data' column contains all flight information as a JSON string.
+          Contains arrivals and departures from the perspective of reporting airports.
+        columns:
+          - name: data
+            description: JSON string containing all flight data
+          - name: _sdc_extracted_at
+            description: Timestamp when the record was extracted
+          - name: _sdc_received_at
+            description: Timestamp when the record was received
+          - name: _sdc_batched_at
+            description: Timestamp when the record was batched
+          - name: _sdc_deleted_at
+            description: Timestamp when the record was deleted (soft delete)
+          - name: _sdc_sequence
+            description: Sequence number for the record
+          - name: _sdc_table_version
+            description: Table version number

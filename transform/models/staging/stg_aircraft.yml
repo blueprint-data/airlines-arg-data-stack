@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: stg_aircraft
+    description: |
+      Aircraft reference data derived from flight records.
+      Each row represents an aircraft with its operational history.
+    columns:
+      - name: aircraft_registration
+        description: Aircraft registration code (e.g., "LV-XXX" for Argentina)
+        tests:
+          - unique
+          - not_null
+      - name: aircraft_type
+        description: Aircraft type code (e.g., "73H" for Boeing 737-800)
+      - name: first_seen_date
+        description: First date this aircraft appeared in the flight data
+      - name: last_seen_date
+        description: Most recent date this aircraft appeared in the flight data
+      - name: total_flights
+        description: Total number of flights for this aircraft
+        tests:
+          - not_null
+      - name: airline_code
+        description: Airline IATA code that operates this aircraft
+      - name: airline_name
+        description: Airline name that operates this aircraft
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation

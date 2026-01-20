@@ -1,0 +1,115 @@
+version: 2
+
+models:
+  - name: airline_metrics
+    description: |
+      Aggregated performance metrics by airline.
+      Provides a comprehensive view of each airline's operational performance.
+
+      **Business Value:**
+      - Compare on-time performance across airlines
+      - Identify top and bottom performing carriers
+      - Support airline performance dashboards
+      - Enable benchmarking and competitive analysis
+
+      **Grain:** One row per airline
+
+      **Key Metrics:**
+      - on_time_departure_percentage: Percentage of departures on time (≤15 min delay)
+      - avg_departure_delay_minutes: Average delay for departures
+      - cancellation_rate: Percentage of cancelled flights
+      - on_time_rank: Rank based on on-time performance (1 = best)
+    columns:
+      - name: airline_code
+        description: Airline IATA code (e.g., "AR" for Aerolíneas Argentinas)
+        tests:
+          - unique
+          - not_null
+      - name: airline_name
+        description: Full airline name
+      - name: total_flight_records
+        description: Total number of flight records (includes arrivals and departures)
+        tests:
+          - not_null
+      - name: unique_flights
+        description: Number of unique flights (distinct flight IDs)
+        tests:
+          - not_null
+      - name: total_departures
+        description: Total number of departure flights
+        tests:
+          - not_null
+      - name: total_arrivals
+        description: Total number of arrival flights
+        tests:
+          - not_null
+      - name: unique_airports
+        description: Number of unique airports served by this airline
+        tests:
+          - not_null
+      - name: unique_routes
+        description: Number of unique routes (origin-destination pairs)
+        tests:
+          - not_null
+      - name: avg_departure_delay_minutes
+        description: Average delay in minutes for departures
+      - name: avg_arrival_delay_minutes
+        description: Average delay in minutes for arrivals
+      - name: avg_overall_delay_minutes
+        description: Average delay in minutes across all flights
+      - name: total_cancelled_flights
+        description: Total number of cancelled flights
+        tests:
+          - not_null
+      - name: total_delayed_flights
+        description: Total number of delayed flights (>15 minutes)
+        tests:
+          - not_null
+      - name: total_on_time_flights
+        description: Total number of on-time flights (≤15 minutes)
+        tests:
+          - not_null
+      - name: total_severely_delayed_flights
+        description: Total number of severely delayed flights (>60 minutes)
+        tests:
+          - not_null
+      - name: total_moderately_delayed_flights
+        description: Total number of moderately delayed flights (30-60 minutes)
+        tests:
+          - not_null
+      - name: on_time_departure_percentage
+        description: Percentage of departures on time (0-100)
+        tests:
+          - not_null
+      - name: delayed_departure_percentage
+        description: Percentage of departures delayed (0-100)
+        tests:
+          - not_null
+      - name: cancellation_rate
+        description: Percentage of cancelled flights (0-100)
+        tests:
+          - not_null
+      - name: severe_delay_rate
+        description: Percentage of severely delayed flights (0-100)
+        tests:
+          - not_null
+      - name: on_time_rank
+        description: Rank based on on-time performance (1 = best, lower is better)
+        tests:
+          - not_null
+      - name: avg_delay_rank
+        description: Rank based on average delay (1 = best, lower is better)
+        tests:
+          - not_null
+      - name: volume_rank
+        description: Rank based on flight volume (1 = most flights, lower is better)
+        tests:
+          - not_null
+      - name: first_flight_date
+        description: First date this airline appeared in the data
+      - name: last_flight_date
+        description: Most recent date this airline appeared in the data
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation
+        tests:
+          - not_null

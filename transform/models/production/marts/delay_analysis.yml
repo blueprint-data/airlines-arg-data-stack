@@ -1,0 +1,81 @@
+version: 2
+
+models:
+  - name: delay_analysis
+    description: |
+      Multi-grain delay analysis for identifying patterns and trends.
+      Contains aggregated delay data across different dimensions.
+
+      **Business Value:**
+      - Identify delay patterns by time of day, day of week, and season
+      - Compare delay performance across routes
+      - Analyze airline-specific delay patterns
+      - Understand delay severity distribution
+
+      **Grain:** Multiple grains combined into one table
+      - hourly: flight_date + scheduled_hour
+      - daily: flight_date + day_of_week
+      - route: airport_code + destination_code
+      - airline: airline_code + day_of_week
+      - distribution: delay_category
+
+      **Usage:**
+      ```sql
+      -- Hourly delays
+      SELECT * FROM delay_analysis
+      WHERE analysis_type = 'hourly'
+      ORDER BY dimension_1, dimension_2
+
+      -- Route delays
+      SELECT * FROM delay_analysis
+      WHERE analysis_type = 'route'
+      ORDER BY avg_delay_minutes DESC
+
+      -- Delay distribution
+      SELECT * FROM delay_analysis
+      WHERE analysis_type = 'distribution'
+      ```
+
+      **Key Metrics:**
+      - total_delayed_flights: Number of delayed flights
+      - avg_delay_minutes: Average delay in minutes
+      - severe_delays: Number of severely delayed flights (>60 min)
+    columns:
+      - name: analysis_type
+        description: Type of analysis (hourly, daily, route, airline, distribution)
+        tests:
+          - not_null
+      - name: dimension_1
+        description: Primary dimension (varies by analysis_type)
+      - name: dimension_2
+        description: Secondary dimension (varies by analysis_type)
+      - name: dimension_3
+        description: Tertiary dimension (varies by analysis_type)
+      - name: total_flights
+        description: Total number of flights in this group
+        tests:
+          - not_null
+      - name: total_delayed_flights
+        description: Number of delayed flights (>15 minutes)
+      - name: avg_delay_minutes
+        description: Average delay in minutes
+      - name: avg_delay_when_delayed
+        description: Average delay only for delayed flights
+      - name: severe_delays
+        description: Number of severely delayed flights (>60 minutes)
+      - name: moderate_delays
+        description: Number of moderately delayed flights (30-60 minutes)
+      - name: minor_delays
+        description: Number of minor delays (0-30 minutes)
+      - name: min_delay_minutes
+        description: Minimum delay in this group
+      - name: max_delay_minutes
+        description: Maximum delay in this group
+      - name: first_seen_date
+        description: First date this group appeared in the data
+      - name: last_seen_date
+        description: Most recent date this group appeared in the data
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation
+        tests:
+          - not_null

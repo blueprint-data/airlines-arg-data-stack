@@ -1,0 +1,31 @@
+airlines-arg-data-stack:
+
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('BIGQUERY_PROJECT_ID') }}"
+      dataset: "{{ env_var('BIGQUERY_DATASET_ID') }}"
+      location: "{{ env_var('BIGQUERY_LOCATION') }}"
+      keyfile: "{{ env_var('DBT_GOOGLE_APPLICATION_CREDENTIALS') }}"
+      threads: 4
+
+    ci:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('BIGQUERY_PROJECT_ID') }}"
+      dataset: "{{ env_var('BIGQUERY_DATASET_ID') }}_ci"
+      location: "{{ env_var('BIGQUERY_LOCATION') }}"
+      keyfile: "{{ env_var('DBT_GOOGLE_APPLICATION_CREDENTIALS') }}"
+      threads: 4
+
+    prod:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('BIGQUERY_PROJECT_ID') }}"
+      dataset: "{{ env_var('BIGQUERY_DATASET_ID') }}"
+      location: "{{ env_var('BIGQUERY_LOCATION') }}"
+      keyfile: "{{ env_var('DBT_GOOGLE_APPLICATION_CREDENTIALS') }}"
+      threads: 4
+
+  target: dev

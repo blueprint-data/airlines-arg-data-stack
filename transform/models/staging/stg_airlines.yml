@@ -1,0 +1,67 @@
+version: 2
+
+models:
+  - name: stg_airlines
+    description: |
+      Airline reference data derived from flight records.
+      Each row represents an airline with operational performance metrics.
+    columns:
+      - name: airline_code
+        description: Airline IATA code (e.g., "AR" for Aerolíneas Argentinas)
+        tests:
+          - unique
+          - not_null
+      - name: airline_name
+        description: Full airline name
+      - name: total_flights
+        description: Total number of flight records for this airline
+        tests:
+          - not_null
+      - name: unique_flights
+        description: Number of unique flights (distinct flight IDs)
+        tests:
+          - not_null
+      - name: unique_airports
+        description: Number of unique airports served by this airline
+        tests:
+          - not_null
+      - name: total_arrivals
+        description: Total arrival flights for this airline
+        tests:
+          - not_null
+      - name: total_departures
+        description: Total departure flights for this airline
+        tests:
+          - not_null
+      - name: avg_delay_minutes
+        description: Average delay in minutes across all flights
+      - name: total_cancelled
+        description: Total number of cancelled flights
+        tests:
+          - not_null
+      - name: total_delayed
+        description: Total number of delayed flights (>15 minutes)
+        tests:
+          - not_null
+      - name: total_on_time
+        description: Total number of on-time flights (≤15 minutes)
+        tests:
+          - not_null
+      - name: on_time_percentage
+        description: Percentage of flights that were on time (0-100)
+        tests:
+          - not_null
+      - name: cancellation_rate
+        description: Percentage of flights that were cancelled (0-100)
+        tests:
+          - not_null
+      - name: delayed_percentage
+        description: Percentage of flights that were delayed (0-100)
+        tests:
+          - not_null
+      - name: first_seen_date
+        description: First date this airline appeared in the data
+      - name: last_seen_date
+        description: Most recent date this airline appeared in the data
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation

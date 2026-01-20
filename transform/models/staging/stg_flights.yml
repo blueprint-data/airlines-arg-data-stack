@@ -1,0 +1,103 @@
+version: 2
+
+models:
+  - name: stg_flights
+    description: |
+      Staging table for flight data. Normalizes raw data from the Aeropuertos Argentina API.
+      Contains arrival and departure records from the perspective of reporting airports.
+    columns:
+      - name: flight_sk
+        description: Surrogate key combining flight_id, date, airport, and movement type
+        tests:
+          - unique
+          - not_null
+      - name: flight_id
+        description: Unique flight identifier from the API
+        tests:
+          - not_null
+      - name: flight_number
+        description: Flight number (e.g., "AR1502")
+        tests:
+          - not_null
+      - name: airline_code
+        description: Airline IATA code (e.g., "AR" for Aerolíneas Argentinas)
+        tests:
+          - not_null
+      - name: airline_name
+        description: Full airline name
+      - name: airport_code
+        description: Airport IATA code where this record was reported
+        tests:
+          - not_null
+      - name: movement_type
+        description: Movement type at the reporting airport
+        tests:
+          - not_null
+      - name: flight_direction
+        description: Human-readable flight direction (arrival/departure)
+        tests:
+          - not_null
+      - name: origin_destination_code
+        description: IATA code of the other airport (destination for departures, origin for arrivals)
+        tests:
+          - not_null
+      - name: origin_destination_city
+        description: Name of the destination/origin city
+      - name: scheduled_timestamp
+        description: Scheduled departure/arrival time
+        tests:
+          - not_null
+      - name: estimated_timestamp
+        description: Estimated departure/arrival time
+      - name: actual_timestamp
+        description: Actual departure/arrival time
+      - name: delay_minutes
+        description: Difference between actual and scheduled time (positive = late, negative = early)
+      - name: flight_date
+        description: Flight date from tap metadata
+        tests:
+          - not_null
+      - name: scheduled_hour
+        description: Hour of day (0-23) of scheduled flight time
+      - name: day_of_week
+        description: Day of week (1-7, 1 = Sunday)
+      - name: month
+        description: Month of the flight (1-12)
+      - name: year
+        description: Year of the flight
+      - name: flight_status
+        description: Current flight status
+      - name: is_cancelled
+        description: Flag indicating if the flight was cancelled
+        tests:
+          - not_null
+      - name: is_delayed
+        description: Flag indicating if the flight was delayed (> 15 minutes)
+        tests:
+          - not_null
+      - name: delay_category
+        description: Category of delay based on severity
+        tests:
+          - not_null
+      - name: aircraft_type
+        description: Aircraft type code (e.g., "73H" for Boeing 737-800)
+      - name: aircraft_registration
+        description: Aircraft registration (e.g., "LV-XXX" for Argentina)
+      - name: gate
+        description: Gate number
+      - name: sector
+        description: Sector code
+      - name: terminal
+        description: Terminal
+      - name: baggage_belt
+        description: Baggage belt number
+      - name: weather_temp
+        description: Temperature at destination/origin
+      - name: weather_description
+        description: Weather description at destination/origin
+      - name: fetched_at
+        description: Timestamp when this record was fetched by the tap
+        tests:
+          - not_null
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation
