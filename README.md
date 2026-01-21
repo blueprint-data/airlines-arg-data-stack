@@ -2,9 +2,9 @@
 
 ## What is this?
 
-This template creates a simple data pipeline: it extracts data from the GitHub API, stores it in BigQuery, and then transforms it into ready-to-use tables. You do not need to know Meltano or dbt to use it; the README guides you step by step.
+This template builds an end-to-end stack for Argentine aviation data: it extracts flight metadata from the Aeropuertos Argentina API, loads it into BigQuery, and transforms it with dbt. You do not need deep Meltano or dbt knowledge to follow along; the README walks through every step.
 
-It is aimed at small teams or projects starting their first stack: quick to spin up, easy to understand, and with CI/CD ready to automate tests and documentation.
+It is targeted at small teams or pilots of analytics stacks: fast to bootstrap, opinionated but readable, and with CI/CD ready for tests and docs.
 
 ## 🎯 Prerequisites (read first)
 
@@ -17,7 +17,7 @@ It is aimed at small teams or projects starting their first stack: quick to spin
 
 ## What it includes
 
-- Extraction with Meltano (`tap-github` + `target-bigquery`)
+- Extraction with Meltano (`tap-airlines-arg` + `target-bigquery`)
 - Transformation with dbt (staging -> marts)
 - Models and columns documented in YAML
 - CI/CD workflows and dbt docs on GitHub Pages
@@ -58,7 +58,7 @@ This allows Meltano to create and manage state files.
 
 You will need datasets for raw and modeled data:
 
-- Raw: `<env>_tap_github` (for example `prod_tap_github`)
+- Raw: `<env>_tap_airlines_arg` (for example `prod_tap_airlines_arg`)
 - Modeled: `stg` and `marts` (prod/ci). For dev, dbt uses `SANDBOX_<DBT_USER>`.
 
 4. [CFG] Configure variables
@@ -85,15 +85,17 @@ TARGET_BIGQUERY_CREDENTIALS_PATH=${MELTANO_GOOGLE_APPLICATION_CREDENTIALS}
 
 DBT_USER=local
 
-TAP_GITHUB_AUTH_TOKEN=ghp_xxx
+TAP_AIRLINES_API_KEY=your-api-key-here
+TAP_AIRLINES_DAYS_BACK=1  # Controls how many days of history the extractor requests (keep low for daily syncs)
 ```
 
 > [i] INFO: If you prefer a single service account, set both credential paths to
 > the same file.
 > [i] INFO: `GOOGLE_APPLICATION_CREDENTIALS` should point to the Meltano account
 > so the GCS state backend can write to your bucket.
-> [!] WARNING: dbt sources read from `<target>_tap_github`. Run Meltano in the
+> [!] WARNING: dbt sources read from `<target>_tap_airlines_arg`. Run Meltano in the
 > same environment as the dbt target you plan to build.
+> [i] INFO: To adjust airports, user-agent, or language values, edit `extraction/meltano.yml`.
 
 5. [LOCAL] Set up the extraction environment
 
@@ -102,6 +104,13 @@ cd extraction
 ./scripts/setup-local.sh
 source venv/bin/activate
 set -a; source ../.env; set +a
+```
+
+With the virtual environment active, authenticate gcloud so Meltano can read your
+application-default credentials:
+
+```bash
+gcloud auth application-default login
 ```
 
 This creates the venv, installs Meltano dependencies, and initializes the project.
@@ -121,10 +130,10 @@ Expected: no errors, and either an empty list or existing states.
 
 ```bash
 set -a; source ../.env; set +a
-meltano --environment=prod run tap-github target-bigquery
+meltano --environment=prod run tap-airlines-arg target-bigquery
 ```
 
-> [!] WARNING: dbt sources point to `<target>_tap_github` (for example `prod_tap_github`).
+> [!] WARNING: dbt sources point to `<target>_tap_airlines_arg` (for example `prod_tap_airlines_arg`).
 > Run Meltano with the same environment as your dbt target.
 
 8. [DBT] Run transform and build models
@@ -146,9 +155,9 @@ dbt build --target prod
 9. [SQL] See results in the DB
 
 ```sql
-select * from marts.github_commits limit 10;
-select * from marts.github_committers limit 10;
-select commit_type, count(*) from marts.github_commits group by commit_type;
+select * from marts.flights_performance limit 10;
+select * from marts.airline_metrics limit 10;
+select airport_code, count(*) from marts.flights_performance group by airport_code order by airport_code;
 ```
 
 10. [DOCS] Generate dbt docs (optional)
@@ -174,9 +183,9 @@ Opens at: http://localhost:8080
 ### Data flow
 
 ```
-GitHub API
-  -> Meltano (tap-github + target-bigquery)
-  -> BigQuery: dataset <env>_tap_github (raw)
+Aeropuertos Argentina API
+  -> Meltano (tap-airlines-arg + target-bigquery)
+  -> BigQuery: dataset <env>_tap_airlines_arg (raw)
   -> dbt staging: dataset stg (stg_*)
   -> dbt marts: dataset marts (final models)
 ```
@@ -199,9 +208,9 @@ All column documentation lives in:
 
 ### Environments (dev, ci, prod)
 
-- dev: default target. Raw data in `dev_tap_github`, models in `SANDBOX_<DBT_USER>`.
-- ci: optional target. Raw data in `ci_tap_github`, models in `stg`/`marts`.
-- prod: raw data in `prod_tap_github`, models in `stg`/`marts` (deploy/docs).
+- dev: default target. Raw data in `dev_tap_airlines_arg`, models in `SANDBOX_<DBT_USER>`.
+- ci: optional target. Raw data in `ci_tap_airlines_arg`, models in `stg`/`marts`.
+- prod: raw data in `prod_tap_airlines_arg`, models in `stg`/`marts` (deploy/docs).
 
 If you do not pass `--target prod`, dbt uses the default target (dev).
 
@@ -232,9 +241,9 @@ export DBT_PROFILES_DIR=.
 dbt build
 ```
 
-> [i] INFO: Raw data stays in `<target>_tap_github` (for example `dev_tap_github`),
-> but your models are created in `SANDBOX_<DBT_USER>`.
-> [i] INFO: If you modify models or YAML, run `dbt build` again.
+- [i] INFO: Raw data stays in `<target>_tap_airlines_arg` (for example `dev_tap_airlines_arg`),
+- but your models are created in `SANDBOX_<DBT_USER>`.
+- [i] INFO: If you modify models or YAML, run `dbt build` again.
 
 ### Add a new model
 
@@ -248,8 +257,8 @@ dbt build --select <nombre_del_modelo>
 
 ### Change the data source
 
-1. Edit `extraction/meltano.yml` to point to your new extractor.
-2. Update `transform/models/staging/source_github.yml` with the new dataset and tables.
+1. Edit `extraction/meltano.yml` to point to your new extractor or adjust the tap configuration.
+2. Update `transform/models/staging/source_airlines.yml` (or any other staging source sheet) with the new dataset and tables.
 3. Rewrite the staging models to map the new columns.
 
 ## Quick repo layout
@@ -263,7 +272,7 @@ dbt build --select <nombre_del_modelo>
 <summary>CI/CD Setup</summary>
 
 The workflows in `.github/workflows` are configured for this BigQuery stack
-(tap-github + target-bigquery). Make sure the secrets below are set.
+(tap-airlines-arg + target-bigquery). Make sure the secrets below are set.
 
 ### Required GitHub secrets
 
@@ -273,7 +282,7 @@ The workflows in `.github/workflows` are configured for this BigQuery stack
 - `DBT_GOOGLE_APPLICATION_CREDENTIALS` (base64-encoded JSON key)
 - `MELTANO_GOOGLE_APPLICATION_CREDENTIALS` (base64-encoded JSON key)
 - `DBT_USER` (for sandbox datasets)
-- `TAP_GITHUB_AUTH_TOKEN`
+- `TAP_AIRLINES_API_KEY`
 - `DBT_MANIFEST_URL` for custom slim CI
 - `MELTANO_STATE_BACKEND_URI` if you want Meltano state in GCS
 - `TARGET_BIGQUERY_PROJECT` if different from `BIGQUERY_PROJECT_ID`
@@ -342,7 +351,7 @@ Error: Source dataset not found
 Run extraction in the same environment as your dbt target (prod example):
 
 ```bash
-meltano --environment=prod run tap-github target-bigquery
+meltano --environment=prod run tap-airlines-arg target-bigquery
 ```
 
 Need a full reload (clear Meltano state)
@@ -351,7 +360,7 @@ If you want to reimport everything, clear the saved state first:
 
 ```bash
 meltano --environment=prod state list
-meltano --environment=prod state clear prod:tap-github-to-target-bigquery --force
+meltano --environment=prod state clear prod:tap-airlines-arg-to-target-bigquery --force
 ```
 
 To clear all state IDs:

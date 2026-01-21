@@ -8,6 +8,8 @@ plugins:
     namespace: tap_airlines_arg
     pip_url: git+https://github.com/blueprint-data/tap-airlines-arg.git
     executable: tap-airlines-arg
+    config:
+      api_key: ${TAP_AIRLINES_API_KEY}
   loaders:
   - name: target-jsonl
     variant: andyh1203
