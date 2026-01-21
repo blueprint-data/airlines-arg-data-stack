@@ -1,0 +1,126 @@
+name: dbt-cd-docs
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      BIGQUERY_PROJECT_ID: ${{ secrets.BIGQUERY_PROJECT_ID }}
+      BIGQUERY_DATASET_ID: ${{ secrets.BIGQUERY_DATASET_ID }}
+      BIGQUERY_LOCATION: ${{ secrets.BIGQUERY_LOCATION }}
+      DBT_GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-dbt-service-account.json
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-dbt-service-account.json
+      DBT_USER: ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip uv
+          uv pip install --system -e ".[transform]"
+
+      - name: Decode GCP credentials
+        run: |
+          printf '%s' "${{ secrets.DBT_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 -d > "${DBT_GOOGLE_APPLICATION_CREDENTIALS}"
+          chmod 600 "${DBT_GOOGLE_APPLICATION_CREDENTIALS}"
+
+      - name: Prepare dbt profiles
+        run: |
+          cp transform/profiles.yml.example transform/profiles.yml
+
+      - name: dbt deps and parse
+        working-directory: transform
+        env:
+          DBT_PROFILES_DIR: ${{ github.workspace }}/transform
+        run: |
+          dbt deps
+          dbt parse
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    env:
+      BIGQUERY_PROJECT_ID: ${{ secrets.BIGQUERY_PROJECT_ID }}
+      BIGQUERY_DATASET_ID: ${{ secrets.BIGQUERY_DATASET_ID }}
+      BIGQUERY_LOCATION: ${{ secrets.BIGQUERY_LOCATION }}
+      DBT_GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-dbt-service-account.json
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-dbt-service-account.json
+      DBT_USER: ${{ secrets.DBT_USER }}
+      PAGES_ARTIFACT_NAME: github-pages-${{ github.run_attempt }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip uv
+          uv pip install --system -e ".[transform]"
+
+      - name: Decode GCP credentials
+        run: |
+          printf '%s' "${{ secrets.DBT_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 -d > "${DBT_GOOGLE_APPLICATION_CREDENTIALS}"
+          chmod 600 "${DBT_GOOGLE_APPLICATION_CREDENTIALS}"
+
+      - name: Prepare dbt profiles
+        run: |
+          cp transform/profiles.yml.example transform/profiles.yml
+
+      - name: Run dbt build
+        working-directory: transform
+        env:
+          DBT_PROFILES_DIR: ${{ github.workspace }}/transform
+        run: |
+          dbt deps
+          dbt build --target prod
+
+      - name: Generate dbt docs
+        working-directory: transform
+        env:
+          DBT_PROFILES_DIR: ${{ github.workspace }}/transform
+        run: |
+          dbt docs generate --target prod
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: transform/target
+          name: ${{ env.PAGES_ARTIFACT_NAME }}
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}

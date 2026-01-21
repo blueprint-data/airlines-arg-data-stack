@@ -1,0 +1,66 @@
+name: data-pipeline
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  run-end-to-end:
+    runs-on: ubuntu-latest
+    env:
+      BIGQUERY_PROJECT_ID: ${{ secrets.BIGQUERY_PROJECT_ID }}
+      BIGQUERY_DATASET_ID: ${{ secrets.BIGQUERY_DATASET_ID }}
+      BIGQUERY_LOCATION: ${{ secrets.BIGQUERY_LOCATION }}
+      DBT_GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-dbt-service-account.json
+      MELTANO_GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-meltano-service-account.json
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-meltano-service-account.json
+      MELTANO_STATE_BACKEND_URI: ${{ secrets.MELTANO_STATE_BACKEND_URI }}
+      TARGET_BIGQUERY_PROJECT: ${{ secrets.TARGET_BIGQUERY_PROJECT || secrets.BIGQUERY_PROJECT_ID }}
+      TARGET_BIGQUERY_LOCATION: ${{ secrets.TARGET_BIGQUERY_LOCATION || secrets.BIGQUERY_LOCATION }}
+      TARGET_BIGQUERY_CREDENTIALS_PATH: ${{ github.workspace }}/gcp-meltano-service-account.json
+      TAP_AIRLINES_DAYS_BACK: ${{ secrets.TAP_AIRLINES_DAYS_BACK || '1' }}
+      DBT_USER: ${{ secrets.DBT_USER }}
+      CI: true
+      DBT_CI_PR_NUMBER: scheduled
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip uv
+          uv pip install --system -e ".[extraction,transform]"
+
+      - name: Decode GCP credentials
+        run: |
+          printf '%s' "${{ secrets.DBT_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 -d > "${DBT_GOOGLE_APPLICATION_CREDENTIALS}"
+          printf '%s' "${{ secrets.MELTANO_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 -d > "${MELTANO_GOOGLE_APPLICATION_CREDENTIALS}"
+          chmod 600 "${DBT_GOOGLE_APPLICATION_CREDENTIALS}" "${MELTANO_GOOGLE_APPLICATION_CREDENTIALS}"
+
+      - name: Install Meltano plugins
+        working-directory: extraction
+        run: |
+          meltano install
+
+      - name: Run extraction
+        working-directory: extraction
+        run: |
+          meltano --environment=prod run tap-airlines-arg target-bigquery
+
+      - name: Prepare dbt profiles
+        run: |
+          cp transform/profiles.yml.example transform/profiles.yml
+
+      - name: Run dbt models
+        working-directory: transform
+        env:
+          DBT_PROFILES_DIR: ${{ github.workspace }}/transform
+        run: |
+          dbt deps
+          dbt build --target prod

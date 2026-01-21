@@ -19,5 +19,5 @@ transform/logs/
 transform/target/
 transform/.user.yml
 transform/profiles.yml
-AGENT.MD
+AGENTS.md
 transform/.blue-helper-cache
