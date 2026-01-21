@@ -45,6 +45,7 @@ airport_stats AS (
         COUNT(DISTINCT CASE WHEN f.movement_type = 'A' THEN f.flight_id END) AS total_arrivals,
         COUNT(DISTINCT CASE WHEN f.movement_type = 'D' THEN f.flight_id END) AS total_departures,
         AVG(CASE WHEN f.actual_timestamp IS NOT NULL THEN f.delay_minutes END) AS avg_delay_minutes,
+        MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
         CURRENT_TIMESTAMP() AS dbt_updated_at
     FROM {{ ref('stg_flights') }} AS f
     WHERE
@@ -71,6 +72,7 @@ SELECT
     total_arrivals,
     total_departures,
     avg_delay_minutes,
+    _sdc_extracted_at,
     dbt_updated_at
 FROM airport_stats
 ORDER BY total_flights DESC

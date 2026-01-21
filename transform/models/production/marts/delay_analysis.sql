@@ -87,6 +87,7 @@ hourly_delays AS (
         SUM(CASE WHEN delay_category = 'minor' THEN 1 ELSE 0 END) AS minor_delays,
         MIN(delay_minutes) AS min_delay_minutes,
         MAX(delay_minutes) AS max_delay_minutes,
+        MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
         CURRENT_TIMESTAMP() AS dbt_updated_at
     FROM {{ ref('flights_performance') }} AS f
     WHERE
@@ -113,6 +114,7 @@ daily_delays AS (
         SUM(CASE WHEN delay_category = 'severe' THEN 1 ELSE 0 END) AS severe_delays,
         SUM(CASE WHEN delay_category = 'moderate' THEN 1 ELSE 0 END) AS moderate_delays,
         SUM(CASE WHEN delay_category = 'minor' THEN 1 ELSE 0 END) AS minor_delays,
+        MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
         CURRENT_TIMESTAMP() AS dbt_updated_at
     FROM {{ ref('flights_performance') }} AS f
     WHERE
@@ -141,6 +143,7 @@ route_delays AS (
         SUM(CASE WHEN delay_category = 'minor' THEN 1 ELSE 0 END) AS minor_delays,
         MIN(flight_date) AS first_seen_date,
         MAX(flight_date) AS last_seen_date,
+        MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
         CURRENT_TIMESTAMP() AS dbt_updated_at
     FROM {{ ref('flights_performance') }} AS f
     WHERE
@@ -169,6 +172,7 @@ airline_delays AS (
         SUM(CASE WHEN delay_category = 'severe' THEN 1 ELSE 0 END) AS severe_delays,
         SUM(CASE WHEN delay_category = 'moderate' THEN 1 ELSE 0 END) AS moderate_delays,
         SUM(CASE WHEN delay_category = 'minor' THEN 1 ELSE 0 END) AS minor_delays,
+        MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
         CURRENT_TIMESTAMP() AS dbt_updated_at
     FROM {{ ref('flights_performance') }} AS f
     WHERE
@@ -195,6 +199,7 @@ delay_distribution AS (
         AVG(CASE WHEN delay_minutes > 0 THEN delay_minutes END) AS avg_delay_when_delayed,
         MIN(delay_minutes) AS min_delay_minutes,
         MAX(delay_minutes) AS max_delay_minutes,
+        MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
         CURRENT_TIMESTAMP() AS dbt_updated_at
     FROM {{ ref('flights_performance') }} AS f
     WHERE
@@ -224,6 +229,7 @@ SELECT
     max_delay_minutes,
     NULL AS first_seen_date,
     NULL AS last_seen_date,
+    _sdc_extracted_at,
     dbt_updated_at
 FROM hourly_delays
 
@@ -245,6 +251,7 @@ SELECT
     NULL AS max_delay_minutes,
     NULL AS first_seen_date,
     NULL AS last_seen_date,
+    _sdc_extracted_at,
     dbt_updated_at
 FROM daily_delays
 
@@ -266,6 +273,7 @@ SELECT
     NULL AS max_delay_minutes,
     first_seen_date,
     last_seen_date,
+    _sdc_extracted_at,
     dbt_updated_at
 FROM route_delays
 
@@ -287,6 +295,7 @@ SELECT
     NULL AS max_delay_minutes,
     NULL AS first_seen_date,
     NULL AS last_seen_date,
+    _sdc_extracted_at,
     dbt_updated_at
 FROM airline_delays
 
@@ -308,5 +317,6 @@ SELECT
     max_delay_minutes,
     NULL AS first_seen_date,
     NULL AS last_seen_date,
+    _sdc_extracted_at,
     dbt_updated_at
 FROM delay_distribution

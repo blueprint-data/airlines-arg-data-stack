@@ -33,6 +33,7 @@ aircraft_data AS (
         MIN(f.flight_date) OVER (PARTITION BY f.aircraft_registration) AS first_seen_date,
         MAX(f.flight_date) OVER (PARTITION BY f.aircraft_registration) AS last_seen_date,
         COUNT(*) OVER (PARTITION BY f.aircraft_registration) AS total_flights,
+        MAX(f._sdc_extracted_at) OVER (PARTITION BY f.aircraft_registration) AS _sdc_extracted_at,
         CURRENT_TIMESTAMP() AS dbt_updated_at
     FROM {{ ref('stg_flights') }} AS f
     WHERE f.aircraft_registration IN (
@@ -72,6 +73,7 @@ SELECT
     a.total_flights,
     am.airline_code,
     am.airline_name,
+    a._sdc_extracted_at,
     a.dbt_updated_at
 FROM aircraft_data AS a
 LEFT JOIN airline_mapping AS am ON a.aircraft_registration = am.aircraft_registration
