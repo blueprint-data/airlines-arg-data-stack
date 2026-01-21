@@ -1,8 +1,6 @@
 {{ config(
     materialized='incremental',
-    incremental_strategy='insert_overwrite',
     unique_key='airport_code',
-    partition_by={'field': 'airport_code', 'data_type': 'string'},
     tags=['marts', 'airports']
 ) }}
 

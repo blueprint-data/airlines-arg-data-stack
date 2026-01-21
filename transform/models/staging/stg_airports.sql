@@ -1,8 +1,6 @@
 {{ config(
     materialized='incremental',
     unique_key='airport_code',
-    incremental_strategy='insert_overwrite',
-    partition_by={'field': 'airport_code', 'data_type': 'string'},
     tags=['staging']
 ) }}
 

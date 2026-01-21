@@ -1,8 +1,6 @@
 {{ config(
     materialized='incremental',
     unique_key='aircraft_registration',
-    incremental_strategy='insert_overwrite',
-    partition_by={'field': 'aircraft_registration', 'data_type': 'string'},
     tags=['staging']
 ) }}
 
