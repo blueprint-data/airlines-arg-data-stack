@@ -34,6 +34,7 @@ airlines_to_refresh AS (
 
 SELECT
     f.airline_code,
+    MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
     ANY_VALUE(f.airline_name) AS airline_name,
     COUNT(*) AS total_flights,
     COUNT(DISTINCT f.flight_id) AS unique_flights,

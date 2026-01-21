@@ -114,5 +114,8 @@ SELECT
     time_of_day,
     flight_duration_minutes,
     fetched_at,
+    _sdc_extracted_at,
+    _sdc_received_at,
+    _sdc_batched_at,
     CURRENT_TIMESTAMP() AS dbt_updated_at
 FROM with_flight_duration

@@ -67,6 +67,9 @@ airline_metrics AS (
         END) AS total_moderately_delayed_flights,
         MIN(flight_date) AS first_flight_date,
         MAX(flight_date) AS last_flight_date,
+        MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
+        MAX(f._sdc_received_at) AS _sdc_received_at,
+        MAX(f._sdc_batched_at) AS _sdc_batched_at,
         CURRENT_TIMESTAMP() AS dbt_updated_at
     FROM {{ ref('flights_performance') }} AS f
     WHERE
@@ -140,6 +143,9 @@ SELECT
     volume_rank,
     first_flight_date,
     last_flight_date,
+    _sdc_extracted_at,
+    _sdc_received_at,
+    _sdc_batched_at,
     dbt_updated_at
 FROM with_rankings
 ORDER BY total_departures DESC
