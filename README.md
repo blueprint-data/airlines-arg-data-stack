@@ -294,6 +294,8 @@ Encode the JSON key before saving to GitHub Secrets:
 base64 -i /path/to/service-account.json | tr -d '\n'
 ```
 
+If you ever rotate the key or re-upload a secret, regenerate it with the same command and paste the exact string (no `***`, no line breaks). You can add a quick check in the workflow (`printf '%s' "${{ secrets.DB... }}" | wc -c`) to confirm the secret size before decoding.
+
 ### Workflows
 
 - `data-pipeline.yml`: schedule + manual. Runs extraction and then dbt.
