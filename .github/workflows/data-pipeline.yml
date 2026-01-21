@@ -19,7 +19,6 @@ jobs:
       TARGET_BIGQUERY_PROJECT: ${{ secrets.TARGET_BIGQUERY_PROJECT || secrets.BIGQUERY_PROJECT_ID }}
       TARGET_BIGQUERY_LOCATION: ${{ secrets.TARGET_BIGQUERY_LOCATION || secrets.BIGQUERY_LOCATION }}
       TARGET_BIGQUERY_CREDENTIALS_PATH: ${{ github.workspace }}/gcp-meltano-service-account.json
-      TAP_AIRLINES_API_KEY: ${{ secrets.TAP_AIRLINES_API_KEY }}
       TAP_AIRLINES_DAYS_BACK: ${{ secrets.TAP_AIRLINES_DAYS_BACK || '1' }}
       DBT_USER: ${{ secrets.DBT_USER }}
       CI: true
