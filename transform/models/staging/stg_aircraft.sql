@@ -1,18 +1,44 @@
 {{ config(
-    materialized='view',
+    materialized='incremental',
+    unique_key='aircraft_registration',
+    incremental_strategy='insert_overwrite',
+    partition_by={'field': 'aircraft_registration', 'data_type': 'string'},
     tags=['staging']
 ) }}
 
-WITH aircraft_data AS (
+WITH watermark AS (
+    {% if is_incremental() %}
+        SELECT COALESCE(MAX(_sdc_extracted_at), TIMESTAMP '1970-01-01 00:00:00+00') AS last_value
+        FROM {{ this }}
+    {% else %}
+        SELECT TIMESTAMP '1970-01-01 00:00:00+00' AS last_value
+    {% endif %}
+),
+
+delta_flights AS (
+    SELECT *
+    FROM {{ ref('stg_flights') }} AS f
+    WHERE
+        f.aircraft_registration IS NOT NULL
+        AND f._sdc_extracted_at > (
+            SELECT w.last_value
+            FROM watermark AS w
+        )
+),
+
+aircraft_data AS (
     SELECT DISTINCT
-        aircraft_registration,
-        aircraft_type,
-        MIN(flight_date) OVER (PARTITION BY aircraft_registration) AS first_seen_date,
-        MAX(flight_date) OVER (PARTITION BY aircraft_registration) AS last_seen_date,
-        COUNT(*) OVER (PARTITION BY aircraft_registration) AS total_flights,
+        f.aircraft_registration,
+        f.aircraft_type,
+        MIN(f.flight_date) OVER (PARTITION BY f.aircraft_registration) AS first_seen_date,
+        MAX(f.flight_date) OVER (PARTITION BY f.aircraft_registration) AS last_seen_date,
+        COUNT(*) OVER (PARTITION BY f.aircraft_registration) AS total_flights,
         CURRENT_TIMESTAMP() AS dbt_updated_at
-    FROM {{ ref('stg_flights') }}
-    WHERE aircraft_registration IS NOT NULL
+    FROM {{ ref('stg_flights') }} AS f
+    WHERE f.aircraft_registration IN (
+        SELECT df.aircraft_registration
+        FROM delta_flights AS df
+    )
 ),
 
 airline_mapping AS (
@@ -22,15 +48,18 @@ airline_mapping AS (
         airline_name
     FROM (
         SELECT
-            aircraft_registration,
-            airline_code,
-            airline_name,
+            f.aircraft_registration,
+            f.airline_code,
+            f.airline_name,
             ROW_NUMBER() OVER (
-                PARTITION BY aircraft_registration
-                ORDER BY fetched_at DESC
+                PARTITION BY f.aircraft_registration
+                ORDER BY f.fetched_at DESC
             ) AS airline_rank
-        FROM {{ ref('stg_flights') }}
-        WHERE aircraft_registration IS NOT NULL
+        FROM {{ ref('stg_flights') }} AS f
+        WHERE f.aircraft_registration IN (
+            SELECT df.aircraft_registration
+            FROM delta_flights AS df
+        )
     )
     WHERE airline_rank = 1
 )

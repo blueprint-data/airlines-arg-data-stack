@@ -1,9 +1,21 @@
 {{ config(
-    materialized='view',
+    materialized='incremental',
+    unique_key='flight_sk',
     tags=['staging']
 ) }}
 
-WITH parsed_json AS (
+WITH source_rows AS (
+    SELECT src.*
+    FROM {{ source('tap_airlines', 'aerolineas_all_flights') }} AS src
+    {% if is_incremental() %}
+        WHERE src._sdc_extracted_at > (
+            SELECT MAX(t._sdc_extracted_at)
+            FROM {{ this }} AS t
+        )
+    {% endif %}
+),
+
+parsed_json AS (
     SELECT
         _sdc_extracted_at,
         _sdc_received_at,
@@ -35,7 +47,7 @@ WITH parsed_json AS (
         JSON_VALUE(data, '$.x_date') AS x_date,
         JSON_VALUE(data, '$.x_fetched_at') AS x_fetched_at_raw,
         JSON_VALUE(data, '$.x_movtp') AS x_movtp
-    FROM {{ source('tap_airlines', 'aerolineas_all_flights') }}
+    FROM source_rows
 ),
 
 with_dates AS (
@@ -115,6 +127,12 @@ with_flags AS (
         _sdc_extracted_at,
         _sdc_received_at,
         _sdc_batched_at,
+        CONCAT(
+            flight_id, '-',
+            flight_date, '-',
+            airport_code, '-',
+            movement_type
+        ) AS flight_sk,
         flight_status IN ('Cancelado', 'Cancelled', 'C') AS is_cancelled,
         COALESCE(delay_minutes > 15, FALSE) AS is_delayed,
         CASE
@@ -134,6 +152,16 @@ with_flags AS (
         EXTRACT(MONTH FROM flight_date) AS month,
         EXTRACT(YEAR FROM flight_date) AS year
     FROM with_delays
+),
+
+ranked_flights AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY flight_sk
+            ORDER BY _sdc_extracted_at DESC, x_fetched_at DESC
+        ) AS flight_rank
+    FROM with_flags
 )
 
 SELECT
@@ -167,12 +195,11 @@ SELECT
     belt AS baggage_belt,
     weather_temp,
     weather_description,
+    _sdc_extracted_at,
+    _sdc_received_at,
+    _sdc_batched_at,
     x_fetched_at AS fetched_at,
-    CONCAT(
-        flight_id, '-',
-        flight_date, '-',
-        airport_code, '-',
-        movement_type
-    ) AS flight_sk,
+    flight_sk,
     CURRENT_TIMESTAMP() AS dbt_updated_at
-FROM with_flags
+FROM ranked_flights
+WHERE flight_rank = 1

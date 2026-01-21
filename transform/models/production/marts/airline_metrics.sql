@@ -1,12 +1,41 @@
 {{ config(
-    materialized='table',
+    materialized='incremental',
+    incremental_strategy='insert_overwrite',
+    unique_key='airline_code',
+    partition_by={'field': 'airline_code', 'data_type': 'string'},
     tags=['marts', 'airlines']
 ) }}
 
-WITH airline_metrics AS (
+WITH last_extract AS (
+    {% if is_incremental() %}
+        SELECT COALESCE(MAX(_sdc_extracted_at), TIMESTAMP '1970-01-01 00:00:00+00') AS last_value
+        FROM {{ this }}
+    {% else %}
+        SELECT TIMESTAMP '1970-01-01 00:00:00+00' AS last_value
+    {% endif %}
+),
+
+new_flights AS (
+    SELECT *
+    FROM {{ ref('flights_performance') }}
+    {% if is_incremental() %}
+        WHERE _sdc_extracted_at > (
+            SELECT le.last_value
+            FROM last_extract AS le
+        )
+    {% endif %}
+),
+
+affected_airlines AS (
+    SELECT DISTINCT airline_code
+    FROM new_flights
+    WHERE airline_code IS NOT NULL
+),
+
+airline_metrics AS (
     SELECT
-        airline_code,
-        airline_name,
+        f.airline_code,
+        f.airline_name,
         COUNT(*) AS total_flight_records,
         COUNT(DISTINCT flight_id) AS unique_flights,
         COUNT(DISTINCT CASE WHEN movement_type = 'D' THEN flight_id END) AS total_departures,
@@ -39,10 +68,15 @@ WITH airline_metrics AS (
         MIN(flight_date) AS first_flight_date,
         MAX(flight_date) AS last_flight_date,
         CURRENT_TIMESTAMP() AS dbt_updated_at
-    FROM {{ ref('flights_performance') }}
+    FROM {{ ref('flights_performance') }} AS f
+    WHERE
+        f.airline_code IN (
+            SELECT ai.airline_code
+            FROM affected_airlines AS ai
+        )
     GROUP BY
-        airline_code,
-        airline_name
+        f.airline_code,
+        f.airline_name
 ),
 
 with_percentages AS (

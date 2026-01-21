@@ -57,6 +57,12 @@ models:
         description: Flight date from tap metadata
         tests:
           - not_null
+      - name: _sdc_extracted_at
+        description: Meltano incremental extraction timestamp
+      - name: _sdc_received_at
+        description: Meltano incremental receive timestamp
+      - name: _sdc_batched_at
+        description: Meltano incremental batch timestamp
       - name: scheduled_hour
         description: Hour of day (0-23) of scheduled flight time
       - name: day_of_week
