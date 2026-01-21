@@ -1,8 +1,6 @@
 {{ config(
     materialized='incremental',
-    incremental_strategy='insert_overwrite',
     unique_key=['analysis_type', 'dimension_1', 'dimension_2', 'dimension_3'],
-    partition_by={'field': 'analysis_type', 'data_type': 'string'},
     tags=['marts', 'delays']
 ) }}
 
