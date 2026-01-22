@@ -10,6 +10,7 @@ plugins:
     executable: tap-airlines-arg
     config:
       days_back: 1
+      airports: ["AEP", "EZE", "COR", "MDZ", "ROS", "SLA", "BRC", "IGR", "NQN", "GRU", "GIG", "BSB", "SCL", "MVD", "LIM", "ASU"]
   loaders:
   - name: target-jsonl
     variant: andyh1203
