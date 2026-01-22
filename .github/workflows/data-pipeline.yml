@@ -2,11 +2,14 @@ name: data-pipeline
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
   schedule:
-    - cron: '0 * * * *'
-
+    - cron: '0 */5 * * *'
 jobs:
   run-end-to-end:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       BIGQUERY_PROJECT_ID: ${{ secrets.BIGQUERY_PROJECT_ID }}
@@ -44,10 +47,9 @@ jobs:
 
       - name: Decode GCP credentials
         run: |
-          printf '%s' "${{ secrets.DBT_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 -d > "${DBT_GOOGLE_APPLICATION_CREDENTIALS}"
-          printf '%s' "${{ secrets.MELTANO_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 -d > "${MELTANO_GOOGLE_APPLICATION_CREDENTIALS}"
+          printf '%s' "${{ secrets.DBT_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 -di > "${DBT_GOOGLE_APPLICATION_CREDENTIALS}"
+          printf '%s' "${{ secrets.MELTANO_GOOGLE_APPLICATION_CREDENTIALS }}" | base64 -di > "${MELTANO_GOOGLE_APPLICATION_CREDENTIALS}"
           chmod 600 "${DBT_GOOGLE_APPLICATION_CREDENTIALS}" "${MELTANO_GOOGLE_APPLICATION_CREDENTIALS}"
-
       - name: Install Meltano plugins
         working-directory: extraction
         run: |
