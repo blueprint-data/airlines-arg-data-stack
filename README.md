@@ -102,6 +102,18 @@ DBT_USER=local
 > `tap-airlines-arg` in `extraction/meltano.yml` or set the matching
 > `TAP_AIRLINES_*` environment variables.
 
+Optional tap overrides (add to `.env` if you want to customize):
+
+```bash
+TAP_AIRLINES_API_URL=https://webaa-api-h4d5amdfcze7hthn.a02.azurefd.net/web-prod/v1/api-aa
+TAP_AIRLINES_API_KEY=your-api-key-here
+TAP_AIRLINES_AIRPORTS='["AEP","EZE","COR","MDZ"]'
+TAP_AIRLINES_DAYS_BACK=1
+TAP_AIRLINES_ORIGIN=https://www.aeropuertosargentina.com
+TAP_AIRLINES_USER_AGENT=airlines-arg-data-stack/1.0
+TAP_AIRLINES_LANGUAGE=es-AR
+```
+
 5. [LOCAL] Set up the extraction environment
 
 ```bash
@@ -176,6 +188,61 @@ dbt docs serve --target prod
 ```
 
 Opens at: http://localhost:8080
+
+11. [EXPORT] Export BigQuery data to GCS (optional)
+
+Local run:
+
+```bash
+set -a; source .env; set +a
+pip install -r requirements.txt
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+export BIGQUERY_PROJECT_ID=your-gcp-project
+export EXPORT_GCS_BUCKET_NAME=your-export-bucket
+export EXPORT_GCS_BLOB_PATH=dev/exports/routes_metrics.json
+export EXPORT_BQ_DATASET_ID=marts
+export EXPORT_BQ_TABLE_ID=flights_performance
+export EXPORT_BQ_DATE_COLUMN=flight_date
+export EXPORT_BQ_LOOKBACK_DAYS=30
+python scripts/export_to_gcs.py
+```
+
+Required env vars: `BIGQUERY_PROJECT_ID`, `EXPORT_GCS_BUCKET_NAME` (or `GCS_BUCKET_NAME`).
+Optional overrides: `EXPORT_GCS_BLOB_PATH`, `EXPORT_BQ_DATASET_ID`, `EXPORT_BQ_TABLE_ID`,
+`EXPORT_BQ_DATE_COLUMN`, `EXPORT_BQ_LOOKBACK_DAYS`, `EXPORT_BQ_LIMIT`.
+
+Dataset selection:
+
+- Prod builds (target `prod`) create marts in dataset `marts`, so use
+  `EXPORT_BQ_DATASET_ID=marts`.
+- Dev builds (target `dev`) create models in `SANDBOX_<DBT_USER>`, so use
+  `EXPORT_BQ_DATASET_ID=SANDBOX_<DBT_USER>` (for example `SANDBOX_JUAN`).
+
+Bucket path selection:
+
+- Local runs default to `dev/exports/...` (for example `EXPORT_GCS_BLOB_PATH=dev/exports/routes_metrics.json`).
+- GitHub Actions should use a prod prefix like `prod/exports/...` to keep outputs separate.
+
+If you see `ModuleNotFoundError: No module named 'google'`, install dependencies with
+`pip install -r requirements.txt` and re-run the script.
+
+Verify the export in GCS:
+
+```bash
+gsutil ls "gs://$EXPORT_GCS_BUCKET_NAME/$EXPORT_GCS_BLOB_PATH"
+```
+
+GitHub Actions:
+
+- Add secrets:
+  - `MELTANO_GOOGLE_APPLICATION_CREDENTIALS` (base64 JSON key)
+  - `BIGQUERY_PROJECT_ID`
+  - `EXPORT_GCS_BUCKET_NAME` (or `GCS_BUCKET_NAME`)
+  - Optional overrides: `EXPORT_BQ_DATASET_ID`, `EXPORT_BQ_TABLE_ID`,
+    `EXPORT_BQ_DATE_COLUMN`, `EXPORT_BQ_LOOKBACK_DAYS`, `EXPORT_BQ_LIMIT`,
+    `EXPORT_GCS_BLOB_PATH`
+- The workflow `.github/workflows/export_bigquery.yml` runs every 6 hours and
+  can be triggered manually.
 
 ## Next steps
 

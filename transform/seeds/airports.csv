@@ -1,0 +1,17 @@
+airport_code,airport_name,city,region,country,latitude,longitude,timezone,is_international
+AEP,Aeroparque Jorge Newbery,Buenos Aires,CABA,Argentina,-34.5592,-58.4156,America/Argentina/Buenos_Aires,false
+EZE,Ministro Pistarini International,Buenos Aires,Buenos Aires,Argentina,-34.8222,-58.5358,America/Argentina/Buenos_Aires,true
+COR,Ingeniero Aeronautico Ambrosio L.V. Taravella,Cordoba,Cordoba,Argentina,-31.3234,-64.2080,America/Argentina/Cordoba,true
+MDZ,El Plumerillo,Mendoza,Mendoza,Argentina,-32.8317,-68.7929,America/Argentina/Mendoza,true
+ROS,Islas Malvinas,Rosario,Santa Fe,Argentina,-32.9036,-60.7850,America/Argentina/Buenos_Aires,true
+SLA,Salta Martin Miguel de Guemes,Salta,Salta,Argentina,-24.8560,-65.4862,America/Argentina/Salta,true
+BRC,San Carlos de Bariloche,San Carlos de Bariloche,Rio Negro,Argentina,-41.1512,-71.1575,America/Argentina/Salta,true
+IGR,Cataratas del Iguazu,Puerto Iguazu,Misiones,Argentina,-25.7373,-54.4734,America/Argentina/Cordoba,true
+NQN,Presidente Peron,Neuquen,Neuquen,Argentina,-38.9490,-68.1557,America/Argentina/Salta,true
+GRU,Guarulhos International,Sao Paulo,Sao Paulo,Brazil,-23.4356,-46.4731,America/Sao_Paulo,true
+GIG,Galeao International,Rio de Janeiro,Rio de Janeiro,Brazil,-22.8090,-43.2506,America/Sao_Paulo,true
+BSB,Brasilia International,Brasilia,Distrito Federal,Brazil,-15.8692,-47.9208,America/Sao_Paulo,true
+SCL,Arturo Merino Benitez,Santiago,Santiago Metropolitan,Chile,-33.3930,-70.7858,America/Santiago,true
+MVD,Carrasco International,Montevideo,Montevideo,Uruguay,-34.8384,-56.0308,America/Montevideo,true
+LIM,Jorge Chavez International,Lima,Lima,Peru,-12.0219,-77.1143,America/Lima,true
+ASU,Silvio Pettirossi International,Asuncion,Central,Paraguay,-25.2399,-57.5191,America/Asuncion,true

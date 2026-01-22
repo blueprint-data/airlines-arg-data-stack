@@ -1,0 +1,123 @@
+version: 2
+
+models:
+  - name: routes_metrics_daily
+    description: |
+      Daily route performance metrics by origin airport, destination airport, and airline.
+      This model is incremental and recalculates only affected route-day keys.
+
+      **Grain:** One row per day, origin, destination, and airline.
+    columns:
+      - name: route_day_sk
+        description: Surrogate key combining flight_date, origin, destination, and airline.
+        tests:
+          - unique
+          - not_null
+      - name: flight_date
+        description: Flight date for the aggregated metrics.
+        tests:
+          - not_null
+      - name: origin_airport_code
+        description: IATA code of the origin airport (reporting airport for departures).
+        tests:
+          - not_null
+      - name: destination_airport_code
+        description: IATA code of the destination airport.
+        tests:
+          - not_null
+      - name: airline_code
+        description: Airline IATA code.
+        tests:
+          - not_null
+      - name: airline_name
+        description: Airline display name.
+      - name: total_flights
+        description: Total number of flights for the route-day.
+      - name: total_completed_flights
+        description: Count of flights with actual timestamps available.
+      - name: total_cancelled_flights
+        description: Count of cancelled flights.
+      - name: total_delayed_flights
+        description: Count of delayed flights (> 15 minutes).
+      - name: total_on_time_flights
+        description: Count of on-time flights (<= 15 minutes delay).
+      - name: avg_delay_minutes
+        description: Average delay minutes for completed flights.
+      - name: on_time_percentage
+        description: Percentage of on-time flights for the route-day.
+      - name: delayed_percentage
+        description: Percentage of delayed flights for the route-day.
+      - name: cancellation_rate
+        description: Percentage of cancelled flights for the route-day.
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation.
+
+  - name: routes_metrics
+    description: |
+      Rolling 60-day route performance metrics enriched with destination context.
+      This model is intended for public-facing analytics and filtering by origin
+      airport, destination city, and destination country.
+
+      **Grain:** One row per origin airport, destination airport, and airline.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - origin_airport_code
+              - destination_airport_code
+              - airline_code
+    columns:
+      - name: origin_airport_code
+        description: IATA code of the origin airport.
+        tests:
+          - not_null
+      - name: origin_airport_name
+        description: Airport name for the origin.
+      - name: origin_city
+        description: City for the origin airport.
+      - name: origin_region
+        description: Region or province for the origin airport.
+      - name: origin_country
+        description: Country for the origin airport.
+      - name: destination_airport_code
+        description: IATA code of the destination airport.
+        tests:
+          - not_null
+      - name: destination_airport_name
+        description: Airport name for the destination.
+      - name: destination_city
+        description: City for the destination airport.
+      - name: destination_region
+        description: Region or province for the destination airport.
+      - name: destination_country
+        description: Country for the destination airport.
+      - name: airline_code
+        description: Airline IATA code.
+        tests:
+          - not_null
+      - name: airline_name
+        description: Airline display name.
+      - name: window_start_date
+        description: Earliest flight date within the rolling window.
+      - name: window_end_date
+        description: Latest flight date within the rolling window.
+      - name: total_flights
+        description: Total flights in the rolling window.
+      - name: total_completed_flights
+        description: Count of completed flights in the rolling window.
+      - name: total_cancelled_flights
+        description: Count of cancelled flights in the rolling window.
+      - name: total_delayed_flights
+        description: Count of delayed flights in the rolling window.
+      - name: total_on_time_flights
+        description: Count of on-time flights in the rolling window.
+      - name: avg_delay_minutes
+        description: Weighted average delay minutes in the rolling window.
+      - name: on_time_percentage
+        description: On-time flight percentage in the rolling window.
+      - name: delayed_percentage
+        description: Delayed flight percentage in the rolling window.
+      - name: cancellation_rate
+        description: Cancellation rate in the rolling window.
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation.
