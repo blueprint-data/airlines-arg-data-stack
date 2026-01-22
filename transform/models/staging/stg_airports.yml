@@ -11,7 +11,7 @@ models:
         tests:
           - not_null
       - name: city
-        description: City name where the airport is located
+        description: City name where the airport is located (requires seed data; null if unavailable)
       - name: first_seen_date
         description: First date this airport appeared in the flight data
       - name: last_seen_date

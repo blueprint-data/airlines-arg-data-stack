@@ -26,16 +26,11 @@ airports_to_refresh AS (
     SELECT DISTINCT df.airport_code
     FROM delta_flights AS df
     WHERE df.airport_code IS NOT NULL
-    UNION ALL
-    SELECT DISTINCT df.origin_destination_code AS airport_code
-    FROM delta_flights AS df
-    WHERE df.origin_destination_code IS NOT NULL
 ),
 
 airport_stats AS (
     SELECT
-        airport_code,
-        origin_destination_city,
+        f.airport_code,
         MIN(f.flight_date) AS first_seen_date,
         MAX(f.flight_date) AS last_seen_date,
         COUNT(*) AS total_flights,
@@ -51,18 +46,12 @@ airport_stats AS (
             SELECT ar.airport_code
             FROM airports_to_refresh AS ar
         )
-        OR f.origin_destination_code IN (
-            SELECT ar.airport_code
-            FROM airports_to_refresh AS ar
-        )
     GROUP BY
-        airport_code,
-        origin_destination_city
+        f.airport_code
 )
 
 SELECT
     airport_code,
-    origin_destination_city AS city,
     first_seen_date,
     last_seen_date,
     total_flights,
@@ -71,6 +60,7 @@ SELECT
     total_departures,
     avg_delay_minutes,
     _sdc_extracted_at,
-    dbt_updated_at
+    dbt_updated_at,
+    CAST(NULL AS STRING) AS city
 FROM airport_stats
 ORDER BY total_flights DESC
