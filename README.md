@@ -26,40 +26,43 @@ It is targeted at small teams or pilots of analytics stacks: fast to bootstrap, 
 
 If you do not have a Google Cloud account, create one. If you already have GCP, create a new project for this stack.
 
-In IAM & Admin:
+1. [IAM] Create service accounts
 
-- Go to Service Accounts and create one account for dbt and one for Meltano
-  (or reuse a single account for both).
-- For each service account, create a JSON key and download it.
-- Rename the files (for example): `dbt-service-account.json` and `meltano-service-account.json`.
-- Go back to IAM and grant access to each service account email
-  (example: `meltano@data.iam.gserviceaccount.com`).
-- Assign the role `BigQuery Data Owner` (or the minimum you need for datasets/jobs).
+   In IAM & Admin:
+
+   - Go to Service Accounts and create one account for dbt and one for Meltano
+     (or reuse a single account for both).
+   - For each service account, create a JSON key and download it.
+   - Rename the files (for example): `dbt-service-account.json` and `meltano-service-account.json`.
+   - Go back to IAM and grant access to each service account email
+     (example: `meltano@data.iam.gserviceaccount.com`).
+   - Assign the role `BigQuery Data Owner` (or the minimum you need for datasets/jobs).
 
 2. [GCS] Create a GCS bucket for Meltano state
 
-In Cloud Storage -> Buckets:
+   In Cloud Storage -> Buckets:
 
-- Create a private bucket (example: `template-bigquery`).
-- Recommended settings:
-  - Public access prevention: Enabled
-  - Access control: Uniform
-  - Storage class: Standard
-  - Encryption: Google-managed
+   - Create a private bucket (example: `template-bigquery`).
+   - Recommended settings:
+     - Public access prevention: Enabled
+     - Access control: Uniform
+     - Storage class: Standard
+     - Encryption: Google-managed
 
-Then in bucket permissions:
+   Then in bucket permissions:
 
-- Add the Meltano service account (for example: `meltano@<project-id>.iam.gserviceaccount.com`).
-- Grant the role `Storage Object Admin`.
+   - Add the Meltano service account (for example: `meltano@<project-id>.iam.gserviceaccount.com`).
+   - Grant the role `Storage Object Admin`.
 
-This allows Meltano to create and manage state files.
+   This allows Meltano to create and manage state files.
 
 3. [DB] Create BigQuery datasets (or grant create permissions)
 
-You will need datasets for raw and modeled data:
+   You will need datasets for raw and modeled data:
 
-- Raw: `<env>_tap_airlines_arg` (for example `prod_tap_airlines_arg`)
-- Modeled: `stg` and `marts` (prod/ci). For dev, dbt uses `SANDBOX_<DBT_USER>`.
+   - Raw: `${MELTANO_ENVIRONMENT}_${MELTANO_EXTRACTOR_NAMESPACE}`
+     (defaults to `<env>_tap_airlines_arg` based on `extraction/meltano.yml`).
+   - Modeled: `stg` and `marts` (prod/ci). For dev, dbt uses `SANDBOX_<DBT_USER>`.
 
 4. [CFG] Configure variables
 
@@ -73,7 +76,7 @@ Edit `.env` with your credentials. Minimal example:
 ```bash
 BIGQUERY_PROJECT_ID=your-gcp-project
 BIGQUERY_DATASET_ID=analytics
-BIGQUERY_LOCATION=US
+BIGQUERY_LOCATION=southamerica-east1
 DBT_GOOGLE_APPLICATION_CREDENTIALS=/path/to/dbt-service-account.json
 MELTANO_GOOGLE_APPLICATION_CREDENTIALS=/path/to/meltano-service-account.json
 GOOGLE_APPLICATION_CREDENTIALS=${MELTANO_GOOGLE_APPLICATION_CREDENTIALS}
@@ -85,8 +88,7 @@ TARGET_BIGQUERY_CREDENTIALS_PATH=${MELTANO_GOOGLE_APPLICATION_CREDENTIALS}
 
 DBT_USER=local
 
-TAP_AIRLINES_API_KEY=your-api-key-here
-TAP_AIRLINES_DAYS_BACK=1  # Controls how many days of history the extractor requests (keep low for daily syncs)
+# TAP_AIRLINES_DAYS_BACK=1  # Controls how many days of history the extractor requests (keep low for daily syncs)
 ```
 
 > [i] INFO: If you prefer a single service account, set both credential paths to
@@ -95,7 +97,10 @@ TAP_AIRLINES_DAYS_BACK=1  # Controls how many days of history the extractor requ
 > so the GCS state backend can write to your bucket.
 > [!] WARNING: dbt sources read from `<target>_tap_airlines_arg`. Run Meltano in the
 > same environment as the dbt target you plan to build.
-> [i] INFO: To adjust airports, user-agent, or language values, edit `extraction/meltano.yml`.
+> [i] INFO: The tap ships with defaults for API URL, API key, airports, origin,
+> user-agent, and language. To override them, add the config keys under
+> `tap-airlines-arg` in `extraction/meltano.yml` or set the matching
+> `TAP_AIRLINES_*` environment variables.
 
 5. [LOCAL] Set up the extraction environment
 
@@ -106,8 +111,8 @@ source venv/bin/activate
 set -a; source ../.env; set +a
 ```
 
-With the virtual environment active, authenticate gcloud so Meltano can read your
-application-default credentials:
+With the virtual environment active, you can optionally authenticate gcloud if you
+prefer Application Default Credentials (instead of service-account JSONs):
 
 ```bash
 gcloud auth application-default login
@@ -197,7 +202,8 @@ Aeropuertos Argentina API
 
 Real example from this project:
 
-- `stg_github_commits` -> `github_commits`
+- `stg_flights` -> `flights_performance`
+- `stg_airlines` -> `airline_metrics`
 
 ### Table of models and key columns
 
