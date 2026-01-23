@@ -26,6 +26,12 @@ jobs:
       EXPORT_BQ_LIMIT: ${{ secrets.EXPORT_BQ_LIMIT || '10000' }}
       EXPORT_GCS_BUCKET_NAME: ${{ secrets.EXPORT_GCS_BUCKET_NAME || secrets.GCS_BUCKET_NAME }}
       EXPORT_GCS_BLOB_PATH: ${{ secrets.EXPORT_GCS_BLOB_PATH || 'data/flights_performance.json' }}
+      EXPORT_TABLE_MAP: >-
+        {"public_headline":"prod/exports/headline.json",
+        "public_airline_breakdown":"prod/exports/airline_breakdown.json",
+        "public_tops":"prod/exports/tops.json",
+        "public_bucket_distribution":"prod/exports/bucket_distribution.json",
+        "public_daily_status":"prod/exports/daily_status.json"}
       GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-export-service-account.json
     steps:
       - name: Checkout

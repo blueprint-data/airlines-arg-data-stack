@@ -22,3 +22,4 @@ transform/profiles.yml
 AGENTS.md
 transform/.blue-helper-cache
 plan.md
+uv.lock

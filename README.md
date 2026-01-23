@@ -199,17 +199,14 @@ pip install -r requirements.txt
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
 export BIGQUERY_PROJECT_ID=your-gcp-project
 export EXPORT_GCS_BUCKET_NAME=your-export-bucket
-export EXPORT_GCS_BLOB_PATH=dev/exports/routes_metrics.json
+export EXPORT_TABLE_MAP='{"public_headline":"dev/exports/headline.json","public_airline_breakdown":"dev/exports/airline_breakdown.json","public_tops":"dev/exports/tops.json","public_bucket_distribution":"dev/exports/bucket_distribution.json","public_daily_status":"dev/exports/daily_status.json"}'
 export EXPORT_BQ_DATASET_ID=marts
-export EXPORT_BQ_TABLE_ID=flights_performance
-export EXPORT_BQ_DATE_COLUMN=flight_date
-export EXPORT_BQ_LOOKBACK_DAYS=30
 python scripts/export_to_gcs.py
 ```
 
 Required env vars: `BIGQUERY_PROJECT_ID`, `EXPORT_GCS_BUCKET_NAME` (or `GCS_BUCKET_NAME`).
-Optional overrides: `EXPORT_GCS_BLOB_PATH`, `EXPORT_BQ_DATASET_ID`, `EXPORT_BQ_TABLE_ID`,
-`EXPORT_BQ_DATE_COLUMN`, `EXPORT_BQ_LOOKBACK_DAYS`, `EXPORT_BQ_LIMIT`.
+Optional overrides: `EXPORT_TABLE_MAP`, `EXPORT_GCS_BLOB_PATH`, `EXPORT_BQ_DATASET_ID`,
+`EXPORT_BQ_TABLE_ID`, `EXPORT_BQ_DATE_COLUMN`, `EXPORT_BQ_LOOKBACK_DAYS`, `EXPORT_BQ_LIMIT`.
 
 Dataset selection:
 
@@ -222,6 +219,14 @@ Bucket path selection:
 
 - Local runs default to `dev/exports/...` (for example `EXPORT_GCS_BLOB_PATH=dev/exports/routes_metrics.json`).
 - GitHub Actions should use a prod prefix like `prod/exports/...` to keep outputs separate.
+
+Exports produced when using `EXPORT_TABLE_MAP`:
+
+- `headline.json`
+- `airline_breakdown.json`
+- `tops.json`
+- `bucket_distribution.json`
+- `daily_status.json`
 
 If you see `ModuleNotFoundError: No module named 'google'`, install dependencies with
 `pip install -r requirements.txt` and re-run the script.
