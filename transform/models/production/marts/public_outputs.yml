@@ -1,0 +1,127 @@
+version: 2
+
+models:
+  - name: public_headline
+    description: |
+      Summary KPIs for the public dashboard over the configured lookback window.
+      **Grain:** Single row for the period.
+    columns:
+      - name: total_flights
+        description: Total number of flights in the period.
+        tests:
+          - not_null
+      - name: cancelled_flights
+        description: Total cancelled flights in the period.
+      - name: delayed_over_30min
+        description: Flights delayed more than 30 minutes.
+      - name: delayed_over_45min
+        description: Flights delayed more than 45 minutes.
+      - name: avg_delay_minutes
+        description: Average delay minutes for completed flights.
+      - name: lookback_days
+        description: Lookback window in days used for the metrics.
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation.
+
+  - name: public_bucket_distribution
+    description: |
+      Distribution of flights across delay buckets for the public dashboard.
+      **Grain:** One row per delay bucket.
+    columns:
+      - name: bucket
+        description: Delay bucket label.
+        tests:
+          - not_null
+          - unique
+      - name: total_flights
+        description: Total flights in the bucket.
+
+  - name: public_airline_breakdown
+    description: |
+      Airline-level performance metrics for the public dashboard.
+      **Grain:** One row per airline.
+    columns:
+      - name: airline_name
+        description: Airline display name.
+        tests:
+          - not_null
+      - name: total_flights
+        description: Total flights for the airline in the period.
+      - name: cancelled_flights
+        description: Cancelled flights for the airline.
+      - name: avg_delay_minutes
+        description: Average delay minutes for completed flights.
+      - name: hours_lost
+        description: Total positive delay minutes converted to hours.
+      - name: delay_over_45
+        description: Flights delayed more than 45 minutes.
+      - name: delay_45_30
+        description: Flights delayed between 30 and 45 minutes.
+      - name: delay_30_15
+        description: Flights delayed between 15 and 30 minutes.
+      - name: delay_15_0
+        description: Flights delayed between 0 and 15 minutes.
+      - name: on_time_or_early
+        description: Flights on time or early.
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation.
+
+  - name: public_tops
+    description: |
+      Combined top lists for public reporting, including top destinations,
+      most delayed flights, and earliest departures.
+      **Grain:** One row per top record and category.
+    columns:
+      - name: record_type
+        description: Top list category (top_destination, top_delay, top_early).
+        tests:
+          - not_null
+      - name: rank
+        description: Rank within the top list category.
+        tests:
+          - not_null
+      - name: destination_city
+        description: Destination city (when available).
+      - name: destination_country
+        description: Destination country (when available).
+      - name: total_flights
+        description: Total flights for top destinations.
+      - name: avg_delay_minutes
+        description: Average delay for top destinations.
+      - name: flight_number
+        description: Flight number for top delay or early flights.
+      - name: origin_airport_code
+        description: Origin airport for top delay or early flights.
+      - name: destination_airport_code
+        description: Destination airport for top delay or early flights.
+      - name: scheduled_departure_time
+        description: Scheduled departure time for top delay or early flights.
+      - name: actual_departure_time
+        description: Actual departure time for top delay or early flights.
+      - name: delay_minutes
+        description: Delay minutes for top delay or early flights.
+
+  - name: public_daily_status
+    description: |
+      Daily series of KPIs for the public dashboard, including top destination.
+      **Grain:** One row per flight date.
+    columns:
+      - name: flight_date
+        description: Flight date for the daily metrics.
+        tests:
+          - not_null
+          - unique
+      - name: total_flights
+        description: Total flights for the day.
+      - name: cancelled_flights
+        description: Cancelled flights for the day.
+      - name: delayed_over_30min
+        description: Flights delayed over 30 minutes for the day.
+      - name: avg_delay_minutes
+        description: Average delay minutes for completed flights on the day.
+      - name: top_destination_city
+        description: Most frequent destination city for the day.
+      - name: top_destination_country
+        description: Most frequent destination country for the day.
+      - name: dbt_updated_at
+        description: Timestamp of the last transformation.
