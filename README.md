@@ -228,6 +228,20 @@ Exports produced when using `EXPORT_TABLE_MAP`:
 - `bucket_distribution.json`
 - `daily_status.json`
 
+Signed URLs (private bucket):
+
+- If your org blocks public access, generate signed URLs and publish a manifest at
+  `prod/exports/manifest.json`.
+- The workflow `.github/workflows/signed_urls.yml` runs weekly to refresh URLs
+  (7-day expiration).
+
+Local run for signed manifest:
+
+```bash
+set -a; source .env; set +a
+python scripts/generate_signed_manifest.py
+```
+
 If you see `ModuleNotFoundError: No module named 'google'`, install dependencies with
 `pip install -r requirements.txt` and re-run the script.
 
