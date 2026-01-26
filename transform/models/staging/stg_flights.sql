@@ -4,6 +4,9 @@
     tags=['staging']
 ) }}
 
+{% set local_timezone = var('flight_local_timezone', 'America/Argentina/Buenos_Aires') %}
+{% set rollover_threshold_hours = var('flight_rollover_threshold_hours', 6) %}
+
 WITH source_rows AS (
     SELECT src.*
     FROM {{ source('tap_airlines', 'aerolineas_all_flights') }} AS src
@@ -78,22 +81,166 @@ with_dates AS (
         SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%SZ', x_fetched_at_raw) AS x_fetched_at,
         SAFE.PARSE_DATE('%Y-%m-%d', x_date) AS flight_date,
         SAFE_CAST(weather_temp AS INT64) AS weather_temp,
-        TIMESTAMP(
-            CONCAT(x_date, ' ', SPLIT(stda_raw, ' ')[SAFE_OFFSET(1)], ':00')
-        ) AS scheduled_timestamp,
-        TIMESTAMP(
-            CONCAT(x_date, ' ', SPLIT(etda_raw, ' ')[SAFE_OFFSET(1)], ':00')
-        ) AS estimated_timestamp,
-        TIMESTAMP(
-            CONCAT(x_date, ' ', SPLIT(atda_raw, ' ')[SAFE_OFFSET(1)], ':00')
-        ) AS actual_timestamp,
-        TIMESTAMP(
-            CONCAT(x_date, ' ', SPLIT(blockon_raw, ' ')[SAFE_OFFSET(1)], ':00')
-        ) AS block_on_timestamp,
-        TIMESTAMP(
-            CONCAT(x_date, ' ', SPLIT(blockoff_raw, ' ')[SAFE_OFFSET(1)], ':00')
-        ) AS block_off_timestamp
+        COALESCE(
+            SAFE.PARSE_TIME(
+                '%H:%M:%S',
+                REGEXP_EXTRACT(stda_raw, r'(\d{2}:\d{2}:\d{2})')
+            ),
+            SAFE.PARSE_TIME(
+                '%H:%M',
+                REGEXP_EXTRACT(stda_raw, r'(\d{2}:\d{2})')
+            )
+        ) AS stda_time,
+        COALESCE(
+            SAFE.PARSE_TIME(
+                '%H:%M:%S',
+                REGEXP_EXTRACT(etda_raw, r'(\d{2}:\d{2}:\d{2})')
+            ),
+            SAFE.PARSE_TIME(
+                '%H:%M',
+                REGEXP_EXTRACT(etda_raw, r'(\d{2}:\d{2})')
+            )
+        ) AS etda_time,
+        COALESCE(
+            SAFE.PARSE_TIME(
+                '%H:%M:%S',
+                REGEXP_EXTRACT(atda_raw, r'(\d{2}:\d{2}:\d{2})')
+            ),
+            SAFE.PARSE_TIME(
+                '%H:%M',
+                REGEXP_EXTRACT(atda_raw, r'(\d{2}:\d{2})')
+            )
+        ) AS atda_time,
+        COALESCE(
+            SAFE.PARSE_TIME(
+                '%H:%M:%S',
+                REGEXP_EXTRACT(blockon_raw, r'(\d{2}:\d{2}:\d{2})')
+            ),
+            SAFE.PARSE_TIME(
+                '%H:%M',
+                REGEXP_EXTRACT(blockon_raw, r'(\d{2}:\d{2})')
+            )
+        ) AS blockon_time,
+        COALESCE(
+            SAFE.PARSE_TIME(
+                '%H:%M:%S',
+                REGEXP_EXTRACT(blockoff_raw, r'(\d{2}:\d{2}:\d{2})')
+            ),
+            SAFE.PARSE_TIME(
+                '%H:%M',
+                REGEXP_EXTRACT(blockoff_raw, r'(\d{2}:\d{2})')
+            )
+        ) AS blockoff_time
     FROM parsed_json
+),
+
+with_local_datetimes AS (
+    SELECT
+        flight_id,
+        flight_number,
+        airline_name,
+        origin_destination_city,
+        _sdc_extracted_at,
+        _sdc_received_at,
+        _sdc_batched_at,
+        aircraft_type,
+        aircraft_registration,
+        sector,
+        gate,
+        belt,
+        terminal,
+        weather_description,
+        airline_code,
+        airport_code,
+        movement_type,
+        origin_destination_code,
+        flight_status,
+        x_fetched_at,
+        flight_date,
+        weather_temp,
+        DATETIME(flight_date, stda_time) AS scheduled_local_dt,
+        DATETIME(flight_date, etda_time) AS estimated_local_dt,
+        DATETIME(flight_date, atda_time) AS actual_local_dt,
+        DATETIME(flight_date, blockon_time) AS block_on_local_dt,
+        DATETIME(flight_date, blockoff_time) AS block_off_local_dt
+    FROM with_dates
+),
+
+with_timestamps AS (
+    SELECT
+        flight_id,
+        flight_number,
+        airline_name,
+        origin_destination_city,
+        _sdc_extracted_at,
+        _sdc_received_at,
+        _sdc_batched_at,
+        aircraft_type,
+        aircraft_registration,
+        sector,
+        gate,
+        belt,
+        terminal,
+        weather_description,
+        airline_code,
+        airport_code,
+        movement_type,
+        origin_destination_code,
+        flight_status,
+        x_fetched_at,
+        flight_date,
+        weather_temp,
+        scheduled_local_dt,
+        TIMESTAMP(scheduled_local_dt, '{{ local_timezone }}') AS scheduled_timestamp,
+        CASE
+            WHEN estimated_local_dt IS NULL THEN NULL
+            WHEN scheduled_local_dt IS NULL THEN TIMESTAMP(estimated_local_dt, '{{ local_timezone }}')
+            WHEN
+                DATETIME_DIFF(estimated_local_dt, scheduled_local_dt, HOUR)
+                <= -{{ rollover_threshold_hours }}
+                THEN TIMESTAMP(
+                    DATETIME_ADD(estimated_local_dt, INTERVAL 1 DAY),
+                    '{{ local_timezone }}'
+                )
+            ELSE TIMESTAMP(estimated_local_dt, '{{ local_timezone }}')
+        END AS estimated_timestamp,
+        CASE
+            WHEN actual_local_dt IS NULL THEN NULL
+            WHEN scheduled_local_dt IS NULL THEN TIMESTAMP(actual_local_dt, '{{ local_timezone }}')
+            WHEN
+                DATETIME_DIFF(actual_local_dt, scheduled_local_dt, HOUR)
+                <= -{{ rollover_threshold_hours }}
+                THEN TIMESTAMP(
+                    DATETIME_ADD(actual_local_dt, INTERVAL 1 DAY),
+                    '{{ local_timezone }}'
+                )
+            ELSE TIMESTAMP(actual_local_dt, '{{ local_timezone }}')
+        END AS actual_timestamp,
+        CASE
+            WHEN block_on_local_dt IS NULL THEN NULL
+            WHEN scheduled_local_dt IS NULL THEN TIMESTAMP(block_on_local_dt, '{{ local_timezone }}')
+            WHEN
+                DATETIME_DIFF(block_on_local_dt, scheduled_local_dt, HOUR)
+                <= -{{ rollover_threshold_hours }}
+                THEN TIMESTAMP(
+                    DATETIME_ADD(block_on_local_dt, INTERVAL 1 DAY),
+                    '{{ local_timezone }}'
+                )
+            ELSE TIMESTAMP(block_on_local_dt, '{{ local_timezone }}')
+        END AS block_on_timestamp,
+        CASE
+            WHEN block_off_local_dt IS NULL THEN NULL
+            WHEN scheduled_local_dt IS NULL THEN TIMESTAMP(block_off_local_dt, '{{ local_timezone }}')
+            WHEN
+                DATETIME_DIFF(block_off_local_dt, scheduled_local_dt, HOUR)
+                <= -{{ rollover_threshold_hours }}
+                THEN TIMESTAMP(
+                    DATETIME_ADD(block_off_local_dt, INTERVAL 1 DAY),
+                    '{{ local_timezone }}'
+                )
+            ELSE TIMESTAMP(block_off_local_dt, '{{ local_timezone }}')
+        END AS block_off_timestamp
+    FROM with_local_datetimes
 ),
 
 with_movement_time AS (
@@ -106,7 +253,7 @@ with_movement_time AS (
                 THEN COALESCE(block_off_timestamp, actual_timestamp)
             ELSE actual_timestamp
         END AS movement_actual_timestamp
-    FROM with_dates
+    FROM with_timestamps
 ),
 
 with_delays AS (
@@ -171,7 +318,7 @@ with_flags AS (
             WHEN movement_type = 'D' THEN 'departure'
             ELSE 'unknown'
         END AS flight_direction,
-        EXTRACT(HOUR FROM scheduled_timestamp) AS scheduled_hour,
+        EXTRACT(HOUR FROM scheduled_local_dt) AS scheduled_hour,
         EXTRACT(DAYOFWEEK FROM flight_date) AS day_of_week,
         EXTRACT(MONTH FROM flight_date) AS month,
         EXTRACT(YEAR FROM flight_date) AS year
