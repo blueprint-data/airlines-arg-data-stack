@@ -56,24 +56,24 @@ with_dates AS (
     SELECT
         flight_id,
         flight_number,
-        airline_code,
         airline_name,
-        airport_code,
-        movement_type,
-        origin_destination_code,
         origin_destination_city,
         _sdc_extracted_at,
-
         _sdc_received_at,
         _sdc_batched_at,
-
         aircraft_type,
         aircraft_registration,
+
         sector,
         gate,
+
         belt,
         terminal,
         weather_description,
+        UPPER(TRIM(airline_code)) AS airline_code,
+        UPPER(TRIM(airport_code)) AS airport_code,
+        UPPER(TRIM(movement_type)) AS movement_type,
+        UPPER(TRIM(origin_destination_code)) AS origin_destination_code,
         COALESCE(actual_status, estimated_status, flight_status) AS flight_status,
         SAFE.PARSE_TIMESTAMP('%Y-%m-%dT%H:%M:%SZ', x_fetched_at_raw) AS x_fetched_at,
         SAFE.PARSE_DATE('%Y-%m-%d', x_date) AS flight_date,
