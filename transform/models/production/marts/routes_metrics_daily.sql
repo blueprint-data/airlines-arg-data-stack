@@ -24,26 +24,36 @@ new_flights AS (
     {% endif %}
 ),
 
+normalized_flights AS (
+    SELECT
+        *,
+        UPPER(TRIM(airport_code)) AS origin_airport_code_norm,
+        UPPER(TRIM(origin_destination_code)) AS destination_airport_code_norm
+    FROM new_flights
+),
+
 affected_routes AS (
     SELECT DISTINCT
         flight_date,
-        airport_code AS origin_airport_code,
-        origin_destination_code AS destination_airport_code,
+        origin_airport_code_norm AS origin_airport_code,
+        destination_airport_code_norm AS destination_airport_code,
         airline_code
-    FROM new_flights
+    FROM normalized_flights
     WHERE
         movement_type = 'D'
         AND flight_date IS NOT NULL
-        AND airport_code IS NOT NULL
-        AND origin_destination_code IS NOT NULL
+        AND origin_airport_code_norm IS NOT NULL
+        AND destination_airport_code_norm IS NOT NULL
+        AND REGEXP_CONTAINS(origin_airport_code_norm, r'^[A-Z]{3}$')
+        AND REGEXP_CONTAINS(destination_airport_code_norm, r'^[A-Z]{3}$')
         AND airline_code IS NOT NULL
 ),
 
 route_daily AS (
     SELECT
         f.flight_date,
-        f.airport_code AS origin_airport_code,
-        f.origin_destination_code AS destination_airport_code,
+        f.origin_airport_code_norm AS origin_airport_code,
+        f.destination_airport_code_norm AS destination_airport_code,
         f.airline_code,
         f.airline_name,
         COUNT(*) AS total_flights,
@@ -55,14 +65,17 @@ route_daily AS (
         SUM(CASE WHEN NOT f.is_cancelled AND NOT f.is_delayed THEN 1 ELSE 0 END) AS total_on_time_flights,
         AVG(
             CASE
-                WHEN f.movement_actual_timestamp IS NOT NULL THEN f.delay_minutes
+                WHEN
+                    f.movement_actual_timestamp IS NOT NULL
+                    AND f.delay_minutes BETWEEN -180 AND 600
+                    THEN f.delay_minutes
             END
         ) AS avg_delay_minutes,
         MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
         MAX(f._sdc_received_at) AS _sdc_received_at,
         MAX(f._sdc_batched_at) AS _sdc_batched_at,
         CURRENT_TIMESTAMP() AS dbt_updated_at
-    FROM {{ ref('flights_performance') }} AS f
+    FROM normalized_flights AS f
     WHERE
         f.movement_type = 'D'
         AND EXISTS (
@@ -70,14 +83,14 @@ route_daily AS (
             FROM affected_routes AS ar
             WHERE
                 ar.flight_date = f.flight_date
-                AND ar.origin_airport_code = f.airport_code
-                AND ar.destination_airport_code = f.origin_destination_code
+                AND ar.origin_airport_code = f.origin_airport_code_norm
+                AND ar.destination_airport_code = f.destination_airport_code_norm
                 AND ar.airline_code = f.airline_code
         )
     GROUP BY
         f.flight_date,
-        f.airport_code,
-        f.origin_destination_code,
+        f.origin_airport_code_norm,
+        f.destination_airport_code_norm,
         f.airline_code,
         f.airline_name
 ),

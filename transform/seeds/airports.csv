@@ -15,3 +15,81 @@ SCL,Arturo Merino Benitez,Santiago,Santiago Metropolitan,Chile,-33.3930,-70.7858
 MVD,Carrasco International,Montevideo,Montevideo,Uruguay,-34.8384,-56.0308,America/Montevideo,true
 LIM,Jorge Chavez International,Lima,Lima,Peru,-12.0219,-77.1143,America/Lima,true
 ASU,Silvio Pettirossi International,Asuncion,Central,Paraguay,-25.2399,-57.5191,America/Asuncion,true
+MIA,Miami International,Miami,Florida,United States,25.7959,-80.2870,America/New_York,true
+JFK,John F Kennedy International,New York,New York,United States,40.6413,-73.7781,America/New_York,true
+LAX,Los Angeles International,Los Angeles,California,United States,33.9416,-118.4085,America/Los_Angeles,true
+MEX,Benito Juarez International,Mexico City,Distrito Federal,Mexico,19.4361,-99.0719,America/Mexico_City,true
+MAD,Adolfo Suarez Madrid Barajas,Madrid,Madrid,Spain,40.4893,-3.5676,Europe/Madrid,true
+BCN,Barcelona El Prat,Barcelona,Catalonia,Spain,41.2974,2.0833,Europe/Madrid,true
+CDG,Charles de Gaulle,Paris,Ile-de-France,France,49.0097,2.5479,Europe/Paris,true
+FCO,Leonardo da Vinci Fiumicino,Rome,Lazio,Italy,41.8003,12.2389,Europe/Rome,true
+LHR,Heathrow,London,England,United Kingdom,51.4700,-0.4543,Europe/London,true
+PTY,Tocumen International,Panama City,Panama,Panama,9.0714,-79.3835,America/Panama,true
+BOG,El Dorado International,Bogota,Bogota,Colombia,4.7016,-74.1469,America/Bogota,true
+SJO,Juan Santamaria International,San Jose,Alajuela,Costa Rica,9.9982,-84.2041,America/Costa_Rica,true
+FLN,Hercilio Luz International,Florianopolis,Santa Catarina,Brazil,,,America/Sao_Paulo,true
+FTE,Comandante Armando Tola,El Calafate,Santa Cruz,Argentina,,,America/Argentina/Buenos_Aires,false
+USH,Malvinas Argentinas,Ushuaia,Tierra del Fuego,Argentina,,,America/Argentina/Buenos_Aires,false
+TUC,Teniente General Benjamín Matienzo,San Miguel de Tucuman,Tucuman,Argentina,,,America/Argentina/Buenos_Aires,false
+SSA,Deputado Luis Eduardo Magalhaes,Salvador,Bahia,Brazil,,,America/Sao_Paulo,true
+CRD,General Enrique Mosconi,Comodoro Rivadavia,Chubut,Argentina,,,America/Argentina/Buenos_Aires,false
+SDE,Vicecomodoro Angel de la Paz Aragones,Santiago del Estero,Santiago del Estero,Argentina,,,America/Argentina/Buenos_Aires,false
+REC,Guararapes - Gilberto Freyre,Recife,Pernambuco,Brazil,,,America/Recife,true
+MDQ,Astor Piazzolla,Mar del Plata,Buenos Aires,Argentina,,,America/Argentina/Buenos_Aires,false
+BPS,Porto Seguro,Porto Seguro,Bahia,Brazil,,,America/Sao_Paulo,true
+REL,Almirante Marcos A. Zar,Trelew,Chubut,Argentina,,,America/Argentina/Buenos_Aires,false
+JUJ,Gobernador Horacio Guzman,San Salvador de Jujuy,Jujuy,Argentina,,,America/Argentina/Buenos_Aires,false
+PUJ,Punta Cana International,Punta Cana,La Altagracia,Dominican Republic,,,America/Santo_Domingo,true
+UAQ,Domingo Faustino Sarmiento,San Juan,San Juan,Argentina,,,America/Argentina/Buenos_Aires,false
+NAT,Sao Goncalo do Amarante,Natal,Rio Grande do Norte,Brazil,,,America/Fortaleza,true
+RES,Resistencia International,Resistencia,Chaco,Argentina,,,America/Argentina/Buenos_Aires,false
+PSS,Libertador General San Martin,Posadas,Misiones,Argentina,,,America/Argentina/Buenos_Aires,false
+PDP,Punta del Este,Punta del Este,Maldonado,Uruguay,,,America/Montevideo,true
+MCZ,Zumbi dos Palmares,Maceio,Alagoas,Brazil,,,America/Maceio,true
+PMY,El Tehuelche,Puerto Madryn,Chubut,Argentina,,,America/Argentina/Buenos_Aires,false
+CPC,Aviador Carlos Campos,San Martin de los Andes,Neuquen,Argentina,,,America/Argentina/Buenos_Aires,false
+CNQ,Corrientes International,Corrientes,Corrientes,Argentina,,,America/Argentina/Buenos_Aires,false
+POA,Salgado Filho,Porto Alegre,Rio Grande do Sul,Brazil,,,America/Sao_Paulo,true
+CFB,Cabo Frio International,Cabo Frio,Rio de Janeiro,Brazil,,,America/Sao_Paulo,true
+PRA,General Justo Jose de Urquiza,Parana,Entre Rios,Argentina,,,America/Argentina/Buenos_Aires,false
+EQS,Esquel,Esquel,Chubut,Argentina,,,America/Argentina/Buenos_Aires,false
+VDM,Gobernador Castello,Viedma,Rio Negro,Argentina,,,America/Argentina/Buenos_Aires,false
+LUQ,Brigadier Mayor Cesar Raul Ojeda,San Luis,San Luis,Argentina,,,America/Argentina/Buenos_Aires,false
+AUA,Queen Beatrix International,Oranjestad,Aruba,Aruba,,,America/Aruba,true
+AFA,San Rafael,San Rafael,Mendoza,Argentina,,,America/Argentina/Buenos_Aires,false
+BHI,Comandante Espora,Bahia Blanca,Buenos Aires,Argentina,,,America/Argentina/Buenos_Aires,false
+SFN,Sauce Viejo,Santa Fe,Santa Fe,Argentina,,,America/Argentina/Buenos_Aires,false
+GYE,Jose Joaquin de Olmedo,Guayaquil,Guayas,Ecuador,,,America/Guayaquil,true
+VVI,Viru Viru International,Santa Cruz de la Sierra,Santa Cruz,Bolivia,,,America/La_Paz,true
+RGL,Piloto Civil Norberto Fernandez,Rio Gallegos,Santa Cruz,Argentina,,,America/Argentina/Buenos_Aires,false
+CTC,Coronel Felipe Varela,San Fernando del Valle de Catamarca,Catamarca,Argentina,,,America/Argentina/Buenos_Aires,false
+IAH,George Bush Intercontinental,Houston,Texas,United States,,,America/Chicago,true
+IQQ,Diego Aracena,Iquique,Tarapaca,Chile,,,America/Santiago,true
+CUN,Cancun International,Cancun,Quintana Roo,Mexico,,,America/Cancun,true
+PVG,Shanghai Pudong,Shanghai,Shanghai,China,,,Asia/Shanghai,true
+ZRH,Zurich,Zurich,Zurich,Switzerland,,,Europe/Zurich,true
+FRA,Frankfurt,Frankfurt,Hesse,Germany,,,Europe/Berlin,true
+YYZ,Toronto Pearson,Toronto,Ontario,Canada,,,America/Toronto,true
+FMA,Formosa International,Formosa,Formosa,Argentina,,,America/Argentina/Buenos_Aires,false
+CWB,Afonso Pena,Curitiba,Parana,Brazil,,,America/Sao_Paulo,true
+MDE,Jose Maria Cordova,Medellin,Antioquia,Colombia,,,America/Bogota,true
+VCP,Viruacopos/Campinas,Campinas,Sao Paulo,Brazil,,,America/Sao_Paulo,true
+RHD,Termas de Rio Hondo,Termas de Rio Hondo,Santiago del Estero,Argentina,,,America/Argentina/Buenos_Aires,false
+RCU,Rio Cuarto,Rio Cuarto,Cordoba,Argentina,,,America/Argentina/Buenos_Aires,false
+JPA,Joao Pessoa,Joao Pessoa,Paraiba,Brazil,,,America/Fortaleza,true
+ATL,Hartsfield-Jackson Atlanta,Atlanta,Georgia,United States,,,America/New_York,true
+SDQ,Las Americas,Santo Domingo,Santo Domingo,Dominican Republic,,,America/Santo_Domingo,true
+ADD,Addis Ababa Bole,Addis Ababa,Addis Ababa,Ethiopia,,,Africa/Addis_Ababa,true
+DXB,Dubai International,Dubai,Dubai,United Arab Emirates,,,Asia/Dubai,true
+RSA,Santa Rosa,Santa Rosa,La Pampa,Argentina,,,America/Argentina/Buenos_Aires,false
+ENO,Teniente Amin Ayub Gonzalez,Encarnacion,Itapua,Paraguay,,,America/Asuncion,true
+GPO,General Pico,General Pico,La Pampa,Argentina,,,America/Argentina/Buenos_Aires,false
+CNF,Tancredo Neves,Confins,Minas Gerais,Brazil,,,America/Sao_Paulo,true
+FOR,Pinto Martins,Fortaleza,Ceara,Brazil,,,America/Fortaleza,true
+IST,Istanbul,Istanbul,Istanbul,Turkey,,,Europe/Istanbul,true
+UIO,Mariscal Sucre,Quito,Pichincha,Ecuador,,,America/Guayaquil,true
+DFW,Dallas Fort Worth,Dallas-Fort Worth,Texas,United States,,,America/Chicago,true
+CYO,Colonia,Colonia del Sacramento,Colonia,Uruguay,,,America/Montevideo,true
+IRJ,Capitan Vicente Almandos Almonacid,La Rioja,La Rioja,Argentina,,,America/Argentina/Buenos_Aires,false
+AMS,Amsterdam Schiphol,Amsterdam,North Holland,Netherlands,,,Europe/Amsterdam,true
+RLO,Valle del Conlara,Merlo,San Luis,Argentina,,,America/Argentina/Buenos_Aires,false

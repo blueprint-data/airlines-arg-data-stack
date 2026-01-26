@@ -33,7 +33,14 @@ top_destinations AS (
         destination_country,
         COUNT(*) AS total_flights,
         ROUND(
-            AVG(CASE WHEN actual_departure_time IS NOT NULL THEN delay_minutes END),
+            AVG(
+                CASE
+                    WHEN
+                        actual_departure_time IS NOT NULL
+                        AND delay_minutes BETWEEN -180 AND 600
+                        THEN delay_minutes
+                END
+            ),
             1
         ) AS avg_delay_minutes,
         ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC) AS rank

@@ -28,7 +28,14 @@ aggregated AS (
     SELECT
         gate,
         COUNT(*) AS total_flights,
-        ROUND(AVG(delay_minutes), 1) AS avg_delay_minutes,
+        ROUND(
+            AVG(
+                CASE
+                    WHEN delay_minutes BETWEEN -180 AND 600 THEN delay_minutes
+                END
+            ),
+            1
+        ) AS avg_delay_minutes,
         SUM(CASE WHEN delay_minutes > 0 THEN 1 ELSE 0 END) AS delayed_flights,
         SUM(CASE WHEN delay_minutes <= 0 THEN 1 ELSE 0 END) AS on_time_flights,
         ROUND(

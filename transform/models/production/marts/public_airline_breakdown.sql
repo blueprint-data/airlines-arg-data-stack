@@ -32,7 +32,14 @@ SELECT
     COUNT(*) AS total_flights,
     SUM(CASE WHEN is_cancelled THEN 1 ELSE 0 END) AS cancelled_flights,
     ROUND(
-        AVG(CASE WHEN actual_departure_time IS NOT NULL THEN delay_minutes END),
+        AVG(
+            CASE
+                WHEN
+                    actual_departure_time IS NOT NULL
+                    AND delay_minutes BETWEEN -180 AND 600
+                    THEN delay_minutes
+            END
+        ),
         1
     ) AS avg_delay_minutes,
     ROUND(

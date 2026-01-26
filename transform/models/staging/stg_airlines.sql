@@ -39,7 +39,11 @@ SELECT
     COUNT(DISTINCT f.airport_code) AS unique_airports,
     COUNTIF(f.movement_type = 'A') AS total_arrivals,
     COUNTIF(f.movement_type = 'D') AS total_departures,
-    AVG(f.delay_minutes) AS avg_delay_minutes,
+    AVG(
+        CASE
+            WHEN f.delay_minutes BETWEEN -180 AND 600 THEN f.delay_minutes
+        END
+    ) AS avg_delay_minutes,
     SUM(CASE WHEN f.is_cancelled THEN 1 ELSE 0 END) AS total_cancelled,
     SUM(CASE WHEN f.is_delayed THEN 1 ELSE 0 END) AS total_delayed,
     SUM(CASE WHEN NOT f.is_cancelled AND NOT f.is_delayed THEN 1 ELSE 0 END) AS total_on_time,
