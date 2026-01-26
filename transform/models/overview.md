@@ -70,6 +70,7 @@ End-to-end data pipeline for analyzing flight delays and airline operations in A
 - Positive values indicate late arrivals/departures
 - Negative values indicate early arrivals/departures
 - Delay threshold: flights with `delay_minutes > 15` are considered delayed
+- Average delay metrics exclude values outside `-180` to `600` minutes
 
 ### Time Dimensions
 - `scheduled_hour`: Hour of day (0-23) for scheduled time

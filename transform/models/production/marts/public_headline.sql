@@ -33,7 +33,14 @@ SELECT
     SUM(CASE WHEN delay_minutes > 30 THEN 1 ELSE 0 END) AS delayed_over_30min,
     SUM(CASE WHEN delay_minutes > 45 THEN 1 ELSE 0 END) AS delayed_over_45min,
     ROUND(
-        AVG(CASE WHEN actual_departure_time IS NOT NULL THEN delay_minutes END),
+        AVG(
+            CASE
+                WHEN
+                    actual_departure_time IS NOT NULL
+                    AND delay_minutes BETWEEN -180 AND 600
+                    THEN delay_minutes
+            END
+        ),
         1
     ) AS avg_delay_minutes,
     {{ lookback_days }} AS lookback_days,

@@ -55,7 +55,10 @@ route_daily AS (
         SUM(CASE WHEN NOT f.is_cancelled AND NOT f.is_delayed THEN 1 ELSE 0 END) AS total_on_time_flights,
         AVG(
             CASE
-                WHEN f.movement_actual_timestamp IS NOT NULL THEN f.delay_minutes
+                WHEN
+                    f.movement_actual_timestamp IS NOT NULL
+                    AND f.delay_minutes BETWEEN -180 AND 600
+                    THEN f.delay_minutes
             END
         ) AS avg_delay_minutes,
         MAX(f._sdc_extracted_at) AS _sdc_extracted_at,

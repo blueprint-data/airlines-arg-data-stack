@@ -78,8 +78,17 @@ hourly_delays AS (
         scheduled_hour,
         COUNT(*) AS total_flights,
         SUM(CASE WHEN is_delayed THEN 1 ELSE 0 END) AS total_delayed_flights,
-        AVG(delay_minutes) AS avg_delay_minutes,
-        AVG(CASE WHEN is_delayed THEN delay_minutes END) AS avg_delay_when_delayed,
+        AVG(
+            CASE
+                WHEN delay_minutes BETWEEN -180 AND 600 THEN delay_minutes
+            END
+        ) AS avg_delay_minutes,
+        AVG(
+            CASE
+                WHEN is_delayed AND delay_minutes BETWEEN -180 AND 600
+                    THEN delay_minutes
+            END
+        ) AS avg_delay_when_delayed,
         SUM(CASE WHEN delay_category = 'severe' THEN 1 ELSE 0 END) AS severe_delays,
         SUM(CASE WHEN delay_category = 'moderate' THEN 1 ELSE 0 END) AS moderate_delays,
         SUM(CASE WHEN delay_category = 'minor' THEN 1 ELSE 0 END) AS minor_delays,
@@ -107,8 +116,17 @@ daily_delays AS (
         day_of_week,
         COUNT(*) AS total_flights,
         SUM(CASE WHEN is_delayed THEN 1 ELSE 0 END) AS total_delayed_flights,
-        AVG(delay_minutes) AS avg_delay_minutes,
-        AVG(CASE WHEN is_delayed THEN delay_minutes END) AS avg_delay_when_delayed,
+        AVG(
+            CASE
+                WHEN delay_minutes BETWEEN -180 AND 600 THEN delay_minutes
+            END
+        ) AS avg_delay_minutes,
+        AVG(
+            CASE
+                WHEN is_delayed AND delay_minutes BETWEEN -180 AND 600
+                    THEN delay_minutes
+            END
+        ) AS avg_delay_when_delayed,
         SUM(CASE WHEN delay_category = 'severe' THEN 1 ELSE 0 END) AS severe_delays,
         SUM(CASE WHEN delay_category = 'moderate' THEN 1 ELSE 0 END) AS moderate_delays,
         SUM(CASE WHEN delay_category = 'minor' THEN 1 ELSE 0 END) AS minor_delays,
@@ -134,8 +152,17 @@ route_delays AS (
         origin_destination_code AS destination_code,
         COUNT(*) AS total_flights,
         SUM(CASE WHEN is_delayed THEN 1 ELSE 0 END) AS total_delayed_flights,
-        AVG(delay_minutes) AS avg_delay_minutes,
-        AVG(CASE WHEN is_delayed THEN delay_minutes END) AS avg_delay_when_delayed,
+        AVG(
+            CASE
+                WHEN delay_minutes BETWEEN -180 AND 600 THEN delay_minutes
+            END
+        ) AS avg_delay_minutes,
+        AVG(
+            CASE
+                WHEN is_delayed AND delay_minutes BETWEEN -180 AND 600
+                    THEN delay_minutes
+            END
+        ) AS avg_delay_when_delayed,
         SUM(CASE WHEN delay_category = 'severe' THEN 1 ELSE 0 END) AS severe_delays,
         SUM(CASE WHEN delay_category = 'moderate' THEN 1 ELSE 0 END) AS moderate_delays,
         SUM(CASE WHEN delay_category = 'minor' THEN 1 ELSE 0 END) AS minor_delays,
@@ -165,8 +192,17 @@ airline_delays AS (
         day_of_week,
         COUNT(*) AS total_flights,
         SUM(CASE WHEN is_delayed THEN 1 ELSE 0 END) AS total_delayed_flights,
-        AVG(delay_minutes) AS avg_delay_minutes,
-        AVG(CASE WHEN is_delayed THEN delay_minutes END) AS avg_delay_when_delayed,
+        AVG(
+            CASE
+                WHEN delay_minutes BETWEEN -180 AND 600 THEN delay_minutes
+            END
+        ) AS avg_delay_minutes,
+        AVG(
+            CASE
+                WHEN is_delayed AND delay_minutes BETWEEN -180 AND 600
+                    THEN delay_minutes
+            END
+        ) AS avg_delay_when_delayed,
         SUM(CASE WHEN delay_category = 'severe' THEN 1 ELSE 0 END) AS severe_delays,
         SUM(CASE WHEN delay_category = 'moderate' THEN 1 ELSE 0 END) AS moderate_delays,
         SUM(CASE WHEN delay_category = 'minor' THEN 1 ELSE 0 END) AS minor_delays,
@@ -193,8 +229,17 @@ delay_distribution AS (
         delay_category,
         COUNT(*) AS total_flights,
         ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage,
-        AVG(delay_minutes) AS avg_delay_minutes,
-        AVG(CASE WHEN delay_minutes > 0 THEN delay_minutes END) AS avg_delay_when_delayed,
+        AVG(
+            CASE
+                WHEN delay_minutes BETWEEN -180 AND 600 THEN delay_minutes
+            END
+        ) AS avg_delay_minutes,
+        AVG(
+            CASE
+                WHEN delay_minutes > 0 AND delay_minutes <= 600
+                    THEN delay_minutes
+            END
+        ) AS avg_delay_when_delayed,
         MIN(delay_minutes) AS min_delay_minutes,
         MAX(delay_minutes) AS max_delay_minutes,
         MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
