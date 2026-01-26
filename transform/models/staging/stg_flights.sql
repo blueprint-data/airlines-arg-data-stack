@@ -25,6 +25,8 @@ parsed_json AS (
         JSON_VALUE(data, '$.arpt') AS airport_code,
         JSON_VALUE(data, '$.atda') AS atda_raw,
         JSON_VALUE(data, '$.belt') AS belt,
+        JSON_VALUE(data, '$.blockoff') AS blockoff_raw,
+        JSON_VALUE(data, '$.blockon') AS blockon_raw,
         JSON_VALUE(data, '$.destorig') AS origin_destination_city,
         JSON_VALUE(data, '$.estbr') AS estimated_status,
         JSON_VALUE(data, '$.estin') AS actual_status,
@@ -84,19 +86,38 @@ with_dates AS (
         ) AS estimated_timestamp,
         TIMESTAMP(
             CONCAT(x_date, ' ', SPLIT(atda_raw, ' ')[SAFE_OFFSET(1)], ':00')
-        ) AS actual_timestamp
+        ) AS actual_timestamp,
+        TIMESTAMP(
+            CONCAT(x_date, ' ', SPLIT(blockon_raw, ' ')[SAFE_OFFSET(1)], ':00')
+        ) AS block_on_timestamp,
+        TIMESTAMP(
+            CONCAT(x_date, ' ', SPLIT(blockoff_raw, ' ')[SAFE_OFFSET(1)], ':00')
+        ) AS block_off_timestamp
     FROM parsed_json
+),
+
+with_movement_time AS (
+    SELECT
+        *,
+        CASE
+            WHEN movement_type = 'A'
+                THEN COALESCE(block_on_timestamp, actual_timestamp)
+            WHEN movement_type = 'D'
+                THEN COALESCE(block_off_timestamp, actual_timestamp)
+            ELSE actual_timestamp
+        END AS movement_actual_timestamp
+    FROM with_dates
 ),
 
 with_delays AS (
     SELECT
         *,
         TIMESTAMP_DIFF(
-            actual_timestamp,
+            movement_actual_timestamp,
             scheduled_timestamp,
             MINUTE
         ) AS delay_minutes
-    FROM with_dates
+    FROM with_movement_time
 ),
 
 with_flags AS (
@@ -112,6 +133,9 @@ with_flags AS (
         scheduled_timestamp,
         estimated_timestamp,
         actual_timestamp,
+        block_on_timestamp,
+        block_off_timestamp,
+        movement_actual_timestamp,
         delay_minutes,
         flight_date,
         flight_status,
@@ -177,6 +201,9 @@ SELECT
     scheduled_timestamp,
     estimated_timestamp,
     actual_timestamp,
+    block_on_timestamp,
+    block_off_timestamp,
+    movement_actual_timestamp,
     delay_minutes,
     flight_date,
     scheduled_hour,

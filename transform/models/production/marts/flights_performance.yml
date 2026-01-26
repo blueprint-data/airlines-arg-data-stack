@@ -64,8 +64,14 @@ models:
         description: Estimated departure/arrival time
       - name: actual_timestamp
         description: Actual departure/arrival time
+      - name: movement_actual_timestamp
+        description: Actual gate time used for OTP (block on/off, fallback to actual)
+      - name: block_on_timestamp
+        description: Block on time from the API (parsed from `blockon`)
+      - name: block_off_timestamp
+        description: Block off time from the API (parsed from `blockoff`)
       - name: delay_minutes
-        description: Difference between actual and scheduled time (positive = late, negative = early)
+        description: Difference between actual gate time (block on/off fallback) and scheduled time
       - name: flight_date
         description: Flight date
         tests:
@@ -113,7 +119,7 @@ models:
         tests:
           - not_null
       - name: flight_duration_minutes
-        description: Actual flight duration in minutes
+        description: Minutes between scheduled and actual gate time for completed flights
       - name: fetched_at
         description: Timestamp when this record was fetched by the tap
         tests:

@@ -13,6 +13,9 @@ jobs:
       SIGNED_GCS_BUCKET_NAME: ${{ secrets.EXPORT_GCS_BUCKET_NAME || secrets.GCS_BUCKET_NAME }}
       SIGNED_MANIFEST_PATH: prod/exports/manifest.json
       SIGNED_URL_EXPIRATION_DAYS: 7
+      SIGNED_MANIFEST_URL_OUTPUT: manifest_url.txt
+      SIGNED_MANIFEST_PUBLIC: 'true'
+      SIGNED_MANIFEST_LOG_URL: 'false'
       GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-signing-service-account.json
     steps:
       - name: Checkout
@@ -36,3 +39,10 @@ jobs:
 
       - name: Generate signed manifest
         run: python scripts/generate_signed_manifest.py
+
+      - name: Upload manifest URL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-manifest-url
+          path: manifest_url.txt
+          retention-days: 7

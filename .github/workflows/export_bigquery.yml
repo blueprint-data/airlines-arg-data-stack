@@ -31,7 +31,10 @@ jobs:
         "public_airline_breakdown":"prod/exports/airline_breakdown.json",
         "public_tops":"prod/exports/tops.json",
         "public_bucket_distribution":"prod/exports/bucket_distribution.json",
-        "public_daily_status":"prod/exports/daily_status.json"}
+        "public_daily_status":"prod/exports/daily_status.json",
+        "public_gates_analysis":"prod/exports/gates_analysis.json",
+        "routes_metrics":"prod/exports/routes_metrics.json"}
+      EXPORT_RAW_TABLES: public_gates_analysis
       GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-export-service-account.json
     steps:
       - name: Checkout

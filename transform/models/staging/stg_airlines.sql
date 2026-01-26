@@ -43,37 +43,46 @@ SELECT
     SUM(CASE WHEN f.is_cancelled THEN 1 ELSE 0 END) AS total_cancelled,
     SUM(CASE WHEN f.is_delayed THEN 1 ELSE 0 END) AS total_delayed,
     SUM(CASE WHEN NOT f.is_cancelled AND NOT f.is_delayed THEN 1 ELSE 0 END) AS total_on_time,
-    CASE
-        WHEN COUNTIF(f.movement_type = 'D') > 0
-            THEN
-                SAFE_MULTIPLY(
-                    SAFE_DIVIDE(
-                        SUM(CASE WHEN NOT f.is_cancelled AND NOT f.is_delayed THEN 1 ELSE 0 END),
-                        COUNTIF(f.movement_type = 'D')
-                    ),
-                    100.0
-                )
-    END AS on_time_percentage,
-    CASE
-        WHEN COUNTIF(f.movement_type = 'D') > 0
-            THEN
-                SAFE_MULTIPLY(
-                    SAFE_DIVIDE(
-                        SUM(CASE WHEN f.is_cancelled THEN 1 ELSE 0 END), COUNTIF(f.movement_type = 'D')
-                    ),
-                    100.0
-                )
-    END AS cancellation_rate,
-    CASE
-        WHEN COUNTIF(f.movement_type = 'D') > 0
-            THEN
-                SAFE_MULTIPLY(
-                    SAFE_DIVIDE(
-                        SUM(CASE WHEN f.is_delayed THEN 1 ELSE 0 END), COUNTIF(f.movement_type = 'D')
-                    ),
-                    100.0
-                )
-    END AS delayed_percentage,
+    COALESCE(
+        CASE
+            WHEN COUNTIF(f.movement_type = 'D') > 0
+                THEN
+                    SAFE_MULTIPLY(
+                        SAFE_DIVIDE(
+                            SUM(CASE WHEN NOT f.is_cancelled AND NOT f.is_delayed THEN 1 ELSE 0 END),
+                            COUNTIF(f.movement_type = 'D')
+                        ),
+                        100.0
+                    )
+        END,
+        0.0
+    ) AS on_time_percentage,
+    COALESCE(
+        CASE
+            WHEN COUNTIF(f.movement_type = 'D') > 0
+                THEN
+                    SAFE_MULTIPLY(
+                        SAFE_DIVIDE(
+                            SUM(CASE WHEN f.is_cancelled THEN 1 ELSE 0 END), COUNTIF(f.movement_type = 'D')
+                        ),
+                        100.0
+                    )
+        END,
+        0.0
+    ) AS cancellation_rate,
+    COALESCE(
+        CASE
+            WHEN COUNTIF(f.movement_type = 'D') > 0
+                THEN
+                    SAFE_MULTIPLY(
+                        SAFE_DIVIDE(
+                            SUM(CASE WHEN f.is_delayed THEN 1 ELSE 0 END), COUNTIF(f.movement_type = 'D')
+                        ),
+                        100.0
+                    )
+        END,
+        0.0
+    ) AS delayed_percentage,
     MIN(f.flight_date) AS first_seen_date,
     MAX(f.flight_date) AS last_seen_date,
     CURRENT_TIMESTAMP() AS dbt_updated_at

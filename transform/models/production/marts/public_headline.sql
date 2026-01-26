@@ -17,7 +17,7 @@ WITH base AS (
         f.flight_status,
         f.is_cancelled,
         f.scheduled_timestamp AS scheduled_departure_time,
-        f.actual_timestamp AS actual_departure_time,
+        f.movement_actual_timestamp AS actual_departure_time,
         COALESCE(dest.city, f.origin_destination_city) AS destination_city
     FROM {{ ref('flights_performance') }} AS f
     LEFT JOIN {{ ref('stg_airports') }} AS dest

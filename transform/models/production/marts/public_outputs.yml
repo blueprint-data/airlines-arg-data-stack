@@ -125,3 +125,38 @@ models:
         description: Most frequent destination country for the day.
       - name: dbt_updated_at
         description: Timestamp of the last transformation.
+
+  - name: public_gates_analysis
+    description: |
+      Gate-level performance metrics with hourly distribution.
+      **Grain:** One row per gate (top 20 by flight volume).
+    columns:
+      - name: gate
+        description: Gate identifier from the airport feed.
+        tests:
+          - not_null
+          - unique
+      - name: total_flights
+        description: Total number of flights associated with the gate.
+        tests:
+          - not_null
+      - name: avg_delay_minutes
+        description: Average delay minutes for flights at the gate.
+      - name: delayed_flights
+        description: Flights with a positive delay at the gate.
+        tests:
+          - not_null
+      - name: on_time_flights
+        description: Flights on time or early at the gate.
+        tests:
+          - not_null
+      - name: on_time_percentage
+        description: Percentage of on-time or early flights at the gate.
+        tests:
+          - not_null
+      - name: max_delay_minutes
+        description: Maximum delay minutes observed at the gate.
+      - name: time_distribution
+        description: Array with the count of flights for each hour (00-23).
+        tests:
+          - not_null

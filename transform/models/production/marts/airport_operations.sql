@@ -40,14 +40,16 @@ airport_operations AS (
         COUNT(DISTINCT CASE WHEN f.movement_type = 'D' THEN f.flight_id END) AS total_departures,
         COUNT(DISTINCT CASE WHEN f.movement_type = 'A' THEN f.flight_id END) AS total_arrivals,
         AVG(CASE
-            WHEN f.movement_type = 'D' AND f.actual_timestamp IS NOT NULL
+            WHEN f.movement_type = 'D' AND f.movement_actual_timestamp IS NOT NULL
                 THEN f.delay_minutes
         END) AS avg_departure_delay_minutes,
         AVG(CASE
-            WHEN f.movement_type = 'A' AND f.actual_timestamp IS NOT NULL
+            WHEN f.movement_type = 'A' AND f.movement_actual_timestamp IS NOT NULL
                 THEN f.delay_minutes
         END) AS avg_arrival_delay_minutes,
-        AVG(CASE WHEN f.actual_timestamp IS NOT NULL THEN f.delay_minutes END) AS avg_overall_delay_minutes,
+        AVG(CASE
+            WHEN f.movement_actual_timestamp IS NOT NULL THEN f.delay_minutes
+        END) AS avg_overall_delay_minutes,
         SUM(CASE WHEN f.is_cancelled THEN 1 ELSE 0 END) AS total_cancelled_flights,
         SUM(CASE WHEN f.is_delayed THEN 1 ELSE 0 END) AS total_delayed_flights,
         SUM(CASE WHEN NOT f.is_cancelled AND NOT f.is_delayed THEN 1 ELSE 0 END) AS total_on_time_flights,
