@@ -41,15 +41,15 @@ airline_metrics AS (
         COUNT(DISTINCT airport_code) AS unique_airports,
         COUNT(DISTINCT origin_destination_code) AS unique_routes,
         AVG(CASE
-            WHEN movement_type = 'D' AND actual_timestamp IS NOT NULL
+            WHEN movement_type = 'D' AND movement_actual_timestamp IS NOT NULL
                 THEN delay_minutes
         END) AS avg_departure_delay_minutes,
         AVG(CASE
-            WHEN movement_type = 'A' AND actual_timestamp IS NOT NULL
+            WHEN movement_type = 'A' AND movement_actual_timestamp IS NOT NULL
                 THEN delay_minutes
         END) AS avg_arrival_delay_minutes,
         AVG(CASE
-            WHEN actual_timestamp IS NOT NULL
+            WHEN movement_actual_timestamp IS NOT NULL
                 THEN delay_minutes
         END) AS avg_overall_delay_minutes,
         SUM(CASE WHEN is_cancelled THEN 1 ELSE 0 END) AS total_cancelled_flights,

@@ -199,14 +199,24 @@ pip install -r requirements.txt
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
 export BIGQUERY_PROJECT_ID=your-gcp-project
 export EXPORT_GCS_BUCKET_NAME=your-export-bucket
-export EXPORT_TABLE_MAP='{"public_headline":"dev/exports/headline.json","public_airline_breakdown":"dev/exports/airline_breakdown.json","public_tops":"dev/exports/tops.json","public_bucket_distribution":"dev/exports/bucket_distribution.json","public_daily_status":"dev/exports/daily_status.json"}'
+export EXPORT_TABLE_MAP='{"public_headline":"dev/exports/headline.json","public_airline_breakdown":"dev/exports/airline_breakdown.json","public_tops":"dev/exports/tops.json","public_bucket_distribution":"dev/exports/bucket_distribution.json","public_daily_status":"dev/exports/daily_status.json","public_gates_analysis":"dev/exports/gates_analysis.json","routes_metrics":"dev/exports/routes_metrics.json"}'
 export EXPORT_BQ_DATASET_ID=marts
 python scripts/export_to_gcs.py
 ```
 
 Required env vars: `BIGQUERY_PROJECT_ID`, `EXPORT_GCS_BUCKET_NAME` (or `GCS_BUCKET_NAME`).
 Optional overrides: `EXPORT_TABLE_MAP`, `EXPORT_GCS_BLOB_PATH`, `EXPORT_BQ_DATASET_ID`,
-`EXPORT_BQ_TABLE_ID`, `EXPORT_BQ_DATE_COLUMN`, `EXPORT_BQ_LOOKBACK_DAYS`, `EXPORT_BQ_LIMIT`.
+`EXPORT_BQ_TABLE_ID`, `EXPORT_BQ_DATE_COLUMN`, `EXPORT_BQ_LOOKBACK_DAYS`,
+`EXPORT_BQ_LIMIT`, `EXPORT_RAW_TABLES`.
+
+Use `EXPORT_RAW_TABLES` to emit raw JSON arrays instead of the metadata wrapper
+for specific tables (for example `public_gates_analysis`).
+
+Frontend contract (gates analysis):
+
+- `public_gates_analysis` is exported as a raw JSON array (no `metadata` wrapper).
+- GCS path: `prod/exports/gates_analysis.json` (or `dev/exports/...` locally).
+- Frontend should parse the payload as an array of gate records.
 
 Dataset selection:
 
@@ -227,20 +237,29 @@ Exports produced when using `EXPORT_TABLE_MAP`:
 - `tops.json`
 - `bucket_distribution.json`
 - `daily_status.json`
+- `gates_analysis.json`
+- `routes_metrics.json`
 
 Signed URLs (private bucket):
 
-- If your org blocks public access, generate signed URLs and publish a manifest at
-  `prod/exports/manifest.json`.
-- The workflow `.github/workflows/signed_urls.yml` runs weekly to refresh URLs
-  (7-day expiration).
+If your org blocks public access, use signed URLs via a manifest stored at
+`prod/exports/manifest.json`. The workflow `.github/workflows/signed_urls.yml`
+runs weekly to refresh URLs (7-day expiration).
 
-Local run for signed manifest:
+Local run:
 
 ```bash
 set -a; source .env; set +a
 python scripts/generate_signed_manifest.py
 ```
+
+Frontend usage:
+
+- If the manifest is public, set `SIGNED_MANIFEST_PUBLIC=true` and use
+  `https://storage.googleapis.com/<bucket>/prod/exports/manifest.json`.
+- If it is private, use the signed manifest URL printed by the workflow (or
+  written to `SIGNED_MANIFEST_URL_OUTPUT`, default `manifest_url.txt`) as the
+  frontend `MANIFEST_URL`.
 
 If you see `ModuleNotFoundError: No module named 'google'`, install dependencies with
 `pip install -r requirements.txt` and re-run the script.
@@ -262,6 +281,13 @@ GitHub Actions:
     `EXPORT_GCS_BLOB_PATH`
 - The workflow `.github/workflows/export_bigquery.yml` runs every 6 hours and
   can be triggered manually.
+
+Signed manifest flow (frontend):
+
+```ts
+const manifest = await fetch(MANIFEST_URL).then((r) => r.json());
+const gates = await fetch(manifest.urls.gates_analysis).then((r) => r.json());
+```
 
 ## Next steps
 

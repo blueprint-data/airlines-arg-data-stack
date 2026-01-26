@@ -47,11 +47,17 @@ route_daily AS (
         f.airline_code,
         f.airline_name,
         COUNT(*) AS total_flights,
-        SUM(CASE WHEN f.actual_timestamp IS NOT NULL THEN 1 ELSE 0 END) AS total_completed_flights,
+        SUM(
+            CASE WHEN f.movement_actual_timestamp IS NOT NULL THEN 1 ELSE 0 END
+        ) AS total_completed_flights,
         SUM(CASE WHEN f.is_cancelled THEN 1 ELSE 0 END) AS total_cancelled_flights,
         SUM(CASE WHEN f.is_delayed THEN 1 ELSE 0 END) AS total_delayed_flights,
         SUM(CASE WHEN NOT f.is_cancelled AND NOT f.is_delayed THEN 1 ELSE 0 END) AS total_on_time_flights,
-        AVG(CASE WHEN f.actual_timestamp IS NOT NULL THEN f.delay_minutes END) AS avg_delay_minutes,
+        AVG(
+            CASE
+                WHEN f.movement_actual_timestamp IS NOT NULL THEN f.delay_minutes
+            END
+        ) AS avg_delay_minutes,
         MAX(f._sdc_extracted_at) AS _sdc_extracted_at,
         MAX(f._sdc_received_at) AS _sdc_received_at,
         MAX(f._sdc_batched_at) AS _sdc_batched_at,

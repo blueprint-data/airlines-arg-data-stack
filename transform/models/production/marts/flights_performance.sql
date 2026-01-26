@@ -28,6 +28,9 @@ flights AS (
         f.scheduled_timestamp,
         f.estimated_timestamp,
         f.actual_timestamp,
+        f.movement_actual_timestamp,
+        f.block_on_timestamp,
+        f.block_off_timestamp,
         f.delay_minutes,
         f.flight_date,
         f.scheduled_hour,
@@ -73,8 +76,12 @@ with_flight_duration AS (
     SELECT
         *,
         CASE
-            WHEN actual_timestamp IS NOT NULL
-                THEN TIMESTAMP_DIFF(actual_timestamp, scheduled_timestamp, MINUTE)
+            WHEN movement_actual_timestamp IS NOT NULL
+                THEN TIMESTAMP_DIFF(
+                    movement_actual_timestamp,
+                    scheduled_timestamp,
+                    MINUTE
+                )
         END AS flight_duration_minutes
     FROM time_of_day
 )
@@ -93,6 +100,9 @@ SELECT
     scheduled_timestamp,
     estimated_timestamp,
     actual_timestamp,
+    movement_actual_timestamp,
+    block_on_timestamp,
+    block_off_timestamp,
     delay_minutes,
     flight_date,
     scheduled_hour,

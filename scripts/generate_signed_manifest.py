@@ -16,6 +16,8 @@ DEFAULT_OBJECTS = {
     "tops": "prod/exports/tops.json",
     "bucket_distribution": "prod/exports/bucket_distribution.json",
     "daily_status": "prod/exports/daily_status.json",
+    "gates_analysis": "prod/exports/gates_analysis.json",
+    "routes_metrics": "prod/exports/routes_metrics.json",
 }
 
 
@@ -45,6 +47,11 @@ def main() -> None:
     bucket_name = bucket_name or os.getenv("GCS_BUCKET_NAME")
     manifest_path = os.getenv("SIGNED_MANIFEST_PATH") or "prod/exports/manifest.json"
     expiration_days = int(os.getenv("SIGNED_URL_EXPIRATION_DAYS") or "7")
+    output_path = os.getenv("SIGNED_MANIFEST_URL_OUTPUT")
+    log_url = (os.getenv("SIGNED_MANIFEST_LOG_URL") or "true").strip().lower()
+    public_manifest = (
+        os.getenv("SIGNED_MANIFEST_PUBLIC") or "false"
+    ).strip().lower() in {"1", "true", "yes"}
 
     if not bucket_name:
         raise ValueError("Missing SIGNED_GCS_BUCKET_NAME or EXPORT_GCS_BUCKET_NAME")
@@ -83,8 +90,35 @@ def main() -> None:
         content_type="application/json",
     )
 
+    if public_manifest:
+        try:
+            manifest_blob.make_public()
+        except Exception as exc:
+            raise RuntimeError(
+                "Failed to make manifest public. If your bucket enforces uniform "
+                "bucket-level access, grant allUsers the Storage Object Viewer role "
+                "on the bucket or use a separate public bucket for the manifest."
+            ) from exc
+
+    manifest_url = manifest_blob.generate_signed_url(
+        expiration=expires_at,
+        method="GET",
+        version="v4",
+        credentials=credentials,
+    )
+
     print("Signed manifest uploaded.")
     print(f"  gs://{bucket_name}/{manifest_path}")
+    if public_manifest:
+        print("Public manifest URL:")
+        print(f"  {manifest_blob.public_url}")
+    if log_url not in {"0", "false", "no"}:
+        print("Signed manifest URL:")
+        print(f"  {manifest_url}")
+
+    if output_path:
+        with open(output_path, "w", encoding="utf-8") as handle:
+            handle.write(f"{manifest_url}\n")
 
 
 if __name__ == "__main__":

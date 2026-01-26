@@ -65,7 +65,8 @@ End-to-end data pipeline for analyzing flight delays and airline operations in A
 - When `movement_type = 'D'`: flight is departing FROM `airport_code` TO `origin_destination_code`
 
 ### Delay Calculation
-- `delay_minutes = actual_timestamp - scheduled_timestamp`
+- `delay_minutes = movement_actual_timestamp - scheduled_timestamp`
+- `movement_actual_timestamp` uses block on/off when available (arrival: block on, departure: block off) and falls back to `actual_timestamp`
 - Positive values indicate late arrivals/departures
 - Negative values indicate early arrivals/departures
 - Delay threshold: flights with `delay_minutes > 15` are considered delayed

@@ -16,6 +16,8 @@ DEFAULT_EXPORTS = {
     "public_tops": "tops.json",
     "public_bucket_distribution": "bucket_distribution.json",
     "public_daily_status": "daily_status.json",
+    "public_gates_analysis": "gates_analysis.json",
+    "routes_metrics": "routes_metrics.json",
 }
 
 
@@ -67,6 +69,14 @@ def resolve_exports(prefix: str) -> dict[str, str]:
     }
 
 
+def resolve_raw_tables() -> set[str]:
+    """Resolve tables that should be exported as raw JSON arrays."""
+    raw_tables = os.getenv("EXPORT_RAW_TABLES")
+    if not raw_tables:
+        return set()
+    return {table.strip() for table in raw_tables.split(",") if table.strip()}
+
+
 def build_query(project_id: str, dataset_id: str, table_id: str) -> str:
     """Build a query for exporting a table."""
     return f"SELECT * FROM `{project_id}.{dataset_id}.{table_id}`"
@@ -80,6 +90,7 @@ def export_table(
     table_id: str,
     bucket_name: str,
     blob_path: str,
+    raw: bool = False,
 ) -> str | None:
     """Export a single table to GCS."""
     query = build_query(project_id, dataset_id, table_id)
@@ -96,14 +107,17 @@ def export_table(
         return None
 
     exported_at = datetime.utcnow().isoformat()
-    payload = {
-        "metadata": {
-            "exported_at": exported_at,
-            "source": f"{project_id}.{dataset_id}.{table_id}",
-            "total_records": len(data),
-        },
-        "data": data,
-    }
+    if raw:
+        payload = data
+    else:
+        payload = {
+            "metadata": {
+                "exported_at": exported_at,
+                "source": f"{project_id}.{dataset_id}.{table_id}",
+                "total_records": len(data),
+            },
+            "data": data,
+        }
 
     json_data = json.dumps(
         payload,
@@ -156,6 +170,7 @@ def export_bigquery_to_gcs() -> dict[str, str | None]:
 
         prefix = resolve_export_prefix(blob_path)
         exports = resolve_exports(prefix)
+        raw_tables = resolve_raw_tables()
 
         print("Config:")
         print(f"  Project: {project_id}")
@@ -179,6 +194,7 @@ def export_bigquery_to_gcs() -> dict[str, str | None]:
                 table_name,
                 bucket_name,
                 path,
+                raw=table_name in raw_tables,
             )
 
         return results
