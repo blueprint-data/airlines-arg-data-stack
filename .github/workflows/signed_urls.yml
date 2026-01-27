@@ -14,7 +14,7 @@ jobs:
       SIGNED_MANIFEST_PATH: prod/exports/manifest.json
       SIGNED_URL_EXPIRATION_DAYS: 7
       SIGNED_MANIFEST_URL_OUTPUT: manifest_url.txt
-      SIGNED_MANIFEST_PUBLIC: 'true'
+      SIGNED_MANIFEST_PUBLIC: 'false'
       SIGNED_MANIFEST_LOG_URL: 'false'
       GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-signing-service-account.json
     steps:
