@@ -58,3 +58,13 @@ jobs:
 
       - name: Export data to GCS
         run: python scripts/export_to_gcs.py
+
+  slack-notify-on-failure:
+    needs: export-data
+    if: failure()
+    uses: ./.github/workflows/slack-notify.yml
+    with:
+      workflow_name: export-bigquery
+      run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
