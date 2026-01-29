@@ -1,0 +1,30 @@
+name: slack-notify
+
+on:
+  workflow_call:
+    inputs:
+      workflow_name:
+        required: true
+        type: string
+      run_url:
+        required: true
+        type: string
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack alert
+        run: |
+          payload=$(cat <<'JSON'
+          {
+            "text": "❌ Falló el workflow: *${{ inputs.workflow_name }}*\nRepo: ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nRun: ${{ inputs.run_url }}\nEnviado por: Blueprintdata Bot"
+          }
+          JSON
+          )
+          curl -X POST -H "Content-type: application/json" \
+            --data "$payload" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}"

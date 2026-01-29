@@ -54,6 +54,16 @@ jobs:
           dbt deps
           dbt parse
 
+  slack-notify-on-failure-validate:
+    needs: validate
+    if: failure()
+    uses: ./.github/workflows/slack-notify.yml
+    with:
+      workflow_name: dbt-cd-docs-validate
+      run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   deploy:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -124,3 +134,13 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}
+
+  slack-notify-on-failure-deploy:
+    needs: deploy
+    if: failure()
+    uses: ./.github/workflows/slack-notify.yml
+    with:
+      workflow_name: dbt-cd-docs-deploy
+      run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

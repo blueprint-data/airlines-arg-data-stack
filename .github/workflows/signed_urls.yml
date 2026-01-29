@@ -46,3 +46,13 @@ jobs:
           name: signed-manifest-url
           path: manifest_url.txt
           retention-days: 7
+
+  slack-notify-on-failure:
+    needs: generate-signed-urls
+    if: failure()
+    uses: ./.github/workflows/slack-notify.yml
+    with:
+      workflow_name: signed-urls
+      run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

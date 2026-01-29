@@ -98,7 +98,17 @@ jobs:
           if [ -f prod-artifacts/manifest.json ]; then
             dbt build --target dev --select state:modified+ --defer --state prod-artifacts --fail-fast
           else
-            dbt build --target dev --fail-fast
+        dbt build --target dev --fail-fast
+
+  slack-notify-on-failure:
+    needs: dbt-pr-check
+    if: failure()
+    uses: ./.github/workflows/slack-notify.yml
+    with:
+      workflow_name: dbt-pr-ci
+      run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           fi
 
   cleanup-sandbox:
