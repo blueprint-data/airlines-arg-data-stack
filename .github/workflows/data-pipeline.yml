@@ -72,9 +72,6 @@ jobs:
           dbt deps
           dbt build --target prod
 
-      - name: Force failure (prueba Slack)
-        run: exit 1
-
   slack-notify-on-failure:
     needs: run-end-to-end
     if: failure()
