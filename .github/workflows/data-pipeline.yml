@@ -54,6 +54,8 @@ jobs:
         working-directory: extraction
         run: |
           meltano install
+          # target-bigquery -> fs -> pkg_resources; pkg_resources is removed in setuptools>=81.
+          uv pip install --python .meltano/loaders/target-bigquery/venv/bin/python "setuptools<81"
 
       - name: Run extraction
         working-directory: extraction
