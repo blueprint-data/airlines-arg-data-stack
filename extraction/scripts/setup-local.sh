@@ -63,6 +63,18 @@ if [ ! -d ".meltano" ]; then
     meltano install
 fi
 
+# Ensure compatibility for target-bigquery plugin imports.
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    TARGET_BQ_PY=".meltano/loaders/target-bigquery/venv/Scripts/python.exe"
+else
+    TARGET_BQ_PY=".meltano/loaders/target-bigquery/venv/bin/python"
+fi
+
+if [ -x "$TARGET_BQ_PY" ]; then
+    echo "🧩 Pinning setuptools for target-bigquery compatibility..."
+    uv pip install --python "$TARGET_BQ_PY" "setuptools<81"
+fi
+
 echo ""
 echo "✅ Setup complete!"
 echo ""
