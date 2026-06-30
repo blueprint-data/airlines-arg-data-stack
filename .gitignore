@@ -6,7 +6,6 @@ transform/dbt_internal_packages/
 __pycache__/
 *.pyc
 *.egg-info/
-extraction/.env
 extraction/.meltano/
 extraction/venv/
 extraction/output/
