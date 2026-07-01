@@ -13,7 +13,7 @@ It is targeted at small teams or pilots of analytics stacks: fast to bootstrap, 
 - Python 3.11+: https://www.python.org/downloads/
 - Git: https://git-scm.com/downloads
 - Google Cloud account (billing-enabled project or rights to create one): https://console.cloud.google.com/
-- Optional but recommended: gcloud CLI https://cloud.google.com/sdk/docs/install
+- Optional but recommended: gcloud CLI: https://cloud.google.com/sdk/docs/install
 
 ## What it includes
 
