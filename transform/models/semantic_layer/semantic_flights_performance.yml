@@ -1,0 +1,106 @@
+semantic_models:
+
+  - name: flights_performance
+    description: |
+      Main fact table for flight-level performance analysis.
+      Grain: one row per flight movement (arrival or departure at a reporting airport).
+    model: ref('flights_performance')
+
+    entities:
+      - name: flight
+        type: primary
+        expr: flight_sk
+
+    measures:
+      - name: flights_count
+        description: Total number of flight movements
+        agg: sum
+        expr: 1
+        agg_time_dimension: flight_date
+
+      - name: cancelled_flights
+        description: Total number of cancelled flights
+        agg: sum
+        expr: CASE WHEN is_cancelled THEN 1 ELSE 0 END
+        agg_time_dimension: flight_date
+
+      - name: delayed_flights
+        description: Total number of delayed flights (delay > 15 min)
+        agg: sum
+        expr: CASE WHEN is_delayed THEN 1 ELSE 0 END
+        agg_time_dimension: flight_date
+
+      - name: on_time_flights
+        description: Total number of on-time flights (delay <= 15 min)
+        agg: sum
+        expr: CASE WHEN NOT is_cancelled AND NOT is_delayed THEN 1 ELSE 0 END
+        agg_time_dimension: flight_date
+
+      - name: delay_minutes
+        description: Sum of delay minutes across all flights
+        agg: sum
+        expr: delay_minutes
+        agg_time_dimension: flight_date
+
+      - name: avg_delay_minutes
+        description: Average delay in minutes across all flights
+        agg: average
+        expr: delay_minutes
+        agg_time_dimension: flight_date
+
+    dimensions:
+      - name: flight_date
+        type: time
+        type_params:
+          time_granularity: day
+        expr: flight_date
+
+      - name: airline_code
+        type: categorical
+
+      - name: airline_name
+        type: categorical
+
+      - name: airport_code
+        type: categorical
+
+      - name: movement_type
+        type: categorical
+        description: A = Arrival, D = Departure
+
+      - name: flight_direction
+        type: categorical
+        description: arrival / departure
+
+      - name: is_cancelled
+        type: categorical
+
+      - name: is_delayed
+        type: categorical
+
+      - name: delay_category
+        type: categorical
+        description: on_time, minor, moderate, severe
+
+      - name: time_of_day
+        type: categorical
+        description: morning, afternoon, evening, night
+
+      - name: day_of_week
+        type: categorical
+
+      - name: month_num
+        type: categorical
+        description: Month of the flight (1-12)
+        expr: month
+
+      - name: year_num
+        type: categorical
+        description: Year of the flight
+        expr: year
+
+      - name: aircraft_type
+        type: categorical
+
+      - name: gate
+        type: categorical

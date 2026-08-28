@@ -1,0 +1,87 @@
+metrics:
+
+# ── Simple metrics (direct measure refs) ──────────────────────────────────
+
+  - name: total_flights
+    label: Total Flights
+    description: Total number of flight movements recorded
+    type: simple
+    type_params:
+      measure: flights_count
+
+  - name: total_cancelled
+    label: Total Cancelled Flights
+    description: Total number of cancelled flights
+    type: simple
+    type_params:
+      measure: cancelled_flights
+
+  - name: total_delayed
+    label: Total Delayed Flights
+    description: Total number of delayed flights (>15 min)
+    type: simple
+    type_params:
+      measure: delayed_flights
+
+  - name: total_on_time
+    label: Total On-Time Flights
+    description: Total number of on-time flights (<=15 min)
+    type: simple
+    type_params:
+      measure: on_time_flights
+
+  - name: total_delay_minutes
+    label: Total Delay Minutes
+    description: Sum of all delay minutes across flights
+    type: simple
+    type_params:
+      measure: delay_minutes
+
+  - name: avg_delay_minutes
+    label: Average Delay Minutes
+    description: Average delay in minutes per flight
+    type: simple
+    type_params:
+      measure: avg_delay_minutes
+
+# ── Derived metrics (ratios / percentages) ────────────────────────────────
+
+  - name: on_time_percentage
+    label: On-Time Percentage
+    description: Percentage of flights that arrived/departed on time
+    type: ratio
+    type_params:
+      numerator: total_on_time
+      denominator: total_flights
+
+  - name: cancellation_rate
+    label: Cancellation Rate
+    description: Percentage of flights that were cancelled
+    type: ratio
+    type_params:
+      numerator: total_cancelled
+      denominator: total_flights
+
+  - name: delayed_percentage
+    label: Delayed Percentage
+    description: Percentage of flights that were delayed
+    type: ratio
+    type_params:
+      numerator: total_delayed
+      denominator: total_flights
+
+# ── Route metrics ─────────────────────────────────────────────────────────
+
+  - name: route_total_flights
+    label: Route Total Flights
+    description: Total flights on a specific route per day
+    type: simple
+    type_params:
+      measure: route_total_flights
+
+  - name: route_avg_delay_minutes
+    label: Route Average Delay Minutes
+    description: Average delay minutes per route-day
+    type: simple
+    type_params:
+      measure: route_avg_delay_minutes

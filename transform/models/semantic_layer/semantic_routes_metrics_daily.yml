@@ -1,0 +1,62 @@
+semantic_models:
+
+  - name: routes_metrics_daily
+    description: |
+      Daily route performance metrics by origin, destination, and airline.
+      Grain: one row per day, origin, destination, and airline.
+    model: ref('routes_metrics_daily')
+
+    entities:
+      - name: route_day
+        type: primary
+        expr: route_day_sk
+
+    measures:
+      - name: route_total_flights
+        description: Total number of flights on a route-day
+        agg: sum
+        expr: total_flights
+        agg_time_dimension: flight_date
+
+      - name: route_cancelled_flights
+        description: Total cancelled flights on a route-day
+        agg: sum
+        expr: total_cancelled_flights
+        agg_time_dimension: flight_date
+
+      - name: route_delayed_flights
+        description: Total delayed flights on a route-day
+        agg: sum
+        expr: total_delayed_flights
+        agg_time_dimension: flight_date
+
+      - name: route_on_time_flights
+        description: Total on-time flights on a route-day
+        agg: sum
+        expr: total_on_time_flights
+        agg_time_dimension: flight_date
+
+      - name: route_avg_delay_minutes
+        description: Average delay in minutes for a route-day
+        agg: average
+        expr: avg_delay_minutes
+        agg_time_dimension: flight_date
+
+    dimensions:
+      - name: flight_date
+        type: time
+        type_params:
+          time_granularity: day
+        expr: flight_date
+
+      - name: origin_airport_code
+        type: categorical
+
+      - name: destination_airport_code
+        type: categorical
+
+      - name: airline_code
+        type: categorical
+
+      - name: airline_name
+        type: categorical
