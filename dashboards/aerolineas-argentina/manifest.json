@@ -1,0 +1,79 @@
+{
+  "title": "Aerolíneas Argentina · Operación y Puntualidad",
+  "entry": "index.tsx",
+  "queries": [
+    "filter_airlines",
+    "filter_airports",
+    "kpis",
+    "daily_trend",
+    "airline_perf",
+    "airport_perf",
+    "delay_distribution",
+    "hourly_profile",
+    "weekday_profile",
+    "top_routes",
+    "gate_perf",
+    "terminal_perf"
+  ],
+  "variables": [
+    {
+      "name": "date_range",
+      "label": "Período",
+      "input": "date_range",
+      "required": false
+    },
+    {
+      "name": "airline",
+      "label": "Aerolínea",
+      "input": "multiselect",
+      "placeholder": "Todas las aerolíneas",
+      "options": { "query": "filter_airlines" },
+      "required": false
+    },
+    {
+      "name": "airport",
+      "label": "Aeropuerto",
+      "input": "multiselect",
+      "placeholder": "Todos los aeropuertos",
+      "options": { "query": "filter_airports" },
+      "required": false
+    },
+    {
+      "name": "direction",
+      "label": "Movimiento",
+      "input": "select",
+      "placeholder": "Ambos",
+      "options": [
+        { "value": "departure", "label": "Salidas" },
+        { "value": "arrival", "label": "Arribos" }
+      ],
+      "required": false
+    },
+    {
+      "name": "time_of_day",
+      "label": "Franja horaria",
+      "input": "multiselect",
+      "placeholder": "Todas las franjas",
+      "options": [
+        { "value": "morning", "label": "Mañana" },
+        { "value": "afternoon", "label": "Tarde" },
+        { "value": "evening", "label": "Noche temprana" },
+        { "value": "night", "label": "Noche" }
+      ],
+      "required": false
+    },
+    {
+      "name": "delay_category",
+      "label": "Categoría de demora",
+      "input": "multiselect",
+      "placeholder": "Todas",
+      "options": [
+        { "value": "on_time", "label": "En hora / adelantado" },
+        { "value": "minor", "label": "Leve" },
+        { "value": "moderate", "label": "Moderada" },
+        { "value": "severe", "label": "Severa" }
+      ],
+      "required": false
+    }
+  ]
+}
